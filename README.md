@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Dungeon Master Assistant
+
+An AI-powered dungeon master assistant built with Next.js, Tailwind CSS, Prisma, and OpenAI.
+
+## Tech Stack
+
+- **Framework**: Next.js (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL (Neon in production, Docker locally)
+- **ORM**: Prisma
+- **AI Provider**: OpenAI
+- **Deployment**: Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- [Node.js](https://nodejs.org/) v18 or higher
+- [Docker](https://www.docker.com/) (for local database)
+- [Git](https://git-scm.com/)
+
+### Local Development Setup
+
+**1. Clone the repo**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone git@github-personal:rjortega-dev/ai-dungeon-master-assistant.git
+cd ai-dungeon-master-assistant
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**2. Install dependencies**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**3. Set up environment variables**
+```bash
+cp .env.example .env
+```
+Then open `.env` and fill in your `OPENAI_API_KEY`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**4. Start the local database**
+```bash
+docker compose up -d
+```
 
-## Learn More
+**5. Push the Prisma schema to your local database**
+```bash
+npx prisma db push
+```
 
-To learn more about Next.js, take a look at the following resources:
+**6. Seed the database with test data**
+```bash
+npx prisma db seed
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**7. Start the development server**
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Never push directly to `main`
+- Always open a PR
+- At least one approval required before merging
+- The person who opens the PR cannot merge their own PR
