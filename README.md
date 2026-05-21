@@ -43,16 +43,19 @@ Then open `.env` and fill in your `OPENAI_API_KEY`.
 ```bash
 docker compose up -d
 ```
+This starts a local PostgreSQL database in a Docker container running in the background. You need Docker installed and running before this step. The `-d` flag runs it in detached mode so it doesn't block your terminal.
 
 **5. Push the Prisma schema to your local database**
 ```bash
 npx prisma db push
 ```
+This creates all the database tables locally based on the Prisma schema.
 
 **6. Seed the database with test data**
 ```bash
 npx prisma db seed
 ```
+This populates your local database with sample data so you have something to work with.
 
 **7. Start the development server**
 ```bash
