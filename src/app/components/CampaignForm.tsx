@@ -2,10 +2,42 @@
 
 import { useState } from "react";
 import Button from "./Button";
+import PlayerForm from "./PlayerForm";
+import type { Player } from "../types/player"
 
 export default function CampaignForm() {
   const [campaignName, setCampaignName] = useState("");
   const [setting, setSetting] = useState("");
+  const [players, setPlayers] = useState<Player[]>([]);
+
+  function addPlayer() {
+    setPlayers([
+      ...players,
+      {
+        player_name: "",
+        character_name: "",
+        character_class: "",
+        race: "",
+        character_level: null,
+        notes: "",
+      },
+    ]);
+  }
+
+  function updatePlayer(
+    index: number,
+    field: keyof Player,
+    value: string | number | null
+  ) {
+    const updatedPlayers = [...players];
+
+    updatedPlayers[index] = {
+      ...updatedPlayers[index],
+      [field]: value,
+    };
+
+    setPlayers(updatedPlayers)
+  }
 
   function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
@@ -49,6 +81,25 @@ export default function CampaignForm() {
           placeholder="Enter your setting description here"
         />
       </div>
+
+      <Button
+        type="button"
+        onClick={addPlayer}
+      >
+        Add Player
+      </Button>
+
+      <div className="space-y-4">
+        {players.map((player, index) => (
+          <PlayerForm
+            key={index}
+            player={player}
+            index={index}
+            updatePlayer={updatePlayer}
+          />
+        ))}
+      </div>
+
       <Button type="submit">
         Create Campaign
       </Button>

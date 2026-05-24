@@ -1,11 +1,4 @@
-type Player = {
-  player_name: string;
-  character_name: string;
-  class: string;
-  race: string;
-  character_level: number;
-  notes: string;
-};
+import type { Player } from "../types/player";
 
 type PlayerFormProps = {
   player: Player;
@@ -13,7 +6,7 @@ type PlayerFormProps = {
   updatePlayer: (
     index: number,
     field: keyof Player,
-    value: string | number
+    value: string | number | null
   ) => void;
 };
 
@@ -47,9 +40,9 @@ export default function PlayerForm({
       />
 
       <input
-        value={player.class}
+        value={player.character_class}
         onChange={(e) =>
-          updatePlayer(index, "class", e.target.value)
+          updatePlayer(index, "character_class", e.target.value)
         }
         placeholder="Character Class"
         className="border px-3 py-2 rounded w-full"
@@ -65,9 +58,15 @@ export default function PlayerForm({
       />
 
       <input
-        value={player.character_level}
+        value={player.character_level ?? ""}
         onChange={(e) =>
-          updatePlayer(index, "character_level", e.target.value)
+          updatePlayer(
+            index, 
+            "character_level", 
+            e.target.value === "" 
+              ? null
+              : Number(e.target.value)
+          )
         }
         placeholder="Character Level"
         className="border px-3 py-2 rounded w-full"
