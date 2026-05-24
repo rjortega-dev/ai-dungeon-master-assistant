@@ -49,7 +49,6 @@ export default function CampaignForm() {
           placeholder="Enter your setting description here"
         />
       </div>
-      
       <Button type="submit">
         Create Campaign
       </Button>
