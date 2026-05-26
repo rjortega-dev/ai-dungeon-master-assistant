@@ -22,47 +22,47 @@ export default function PlayerForm({
       </h2>
 
       <input
-        value={player.player_name}
+        value={player.playerName}
         onChange={(e) =>
-          updatePlayer(index, "player_name", e.target.value)
+          updatePlayer(index, "playerName", e.target.value)
         }
         placeholder="Player Name"
         className="border px-3 py-2 rounded w-full"
       />
 
       <input
-        value={player.character_name}
+        value={player.characterName}
         onChange={(e) =>
-          updatePlayer(index, "character_name", e.target.value)
+          updatePlayer(index, "characterName", e.target.value)
         }
         placeholder="Character Name"
         className="border px-3 py-2 rounded w-full"
       />
 
       <input
-        value={player.character_class}
+        value={player.characterClass}
         onChange={(e) =>
-          updatePlayer(index, "character_class", e.target.value)
+          updatePlayer(index, "characterClass", e.target.value)
         }
         placeholder="Character Class"
         className="border px-3 py-2 rounded w-full"
       />
 
       <input
-        value={player.race}
+        value={player.characterRace}
         onChange={(e) =>
-          updatePlayer(index, "race", e.target.value)
+          updatePlayer(index, "characterRace", e.target.value)
         }
         placeholder="Character Race"
         className="border px-3 py-2 rounded w-full"
       />
 
       <input
-        value={player.character_level ?? ""}
+        value={player.characterLevel ?? ""}
         onChange={(e) =>
           updatePlayer(
             index, 
-            "character_level", 
+            "characterLevel", 
             e.target.value === "" 
               ? null
               : Number(e.target.value)

@@ -1,8 +1,8 @@
 export type Player = {
-  player_name: string;
-  character_name: string;
-  character_class: string;
-  race: string;
-  character_level: number | null;
+  playerName: string;
+  characterName: string;
+  characterClass: string;
+  characterRace: string;
+  characterLevel: number | null;
   notes: string;
 };
