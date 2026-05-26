@@ -1,26 +1,22 @@
-"use client";
-
-import { useState } from "react";
-
 import Button from "./Button";
 import LocationForm from "./LocationForm";
 
 import type { World } from "../types/world";
 
-export default function WorldForm() {
-  const [world, setWorld] = useState<World>({
-    settingName: "",
-    settingStyle: "",
-    locations: [],
-  });
+type WorldFormProps = {
+  world: World;
+  setWorld: (world: World) => void;
+}
 
+export default function WorldForm({
+  world,
+  setWorld,
+}: WorldFormProps) {
   function addLocation() {
     setWorld({
       ...world,
-
       locations: [
         ...world.locations,
-
         {
           name: "",
           description: "",
