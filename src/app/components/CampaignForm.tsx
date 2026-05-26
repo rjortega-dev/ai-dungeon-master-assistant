@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Button from "./Button";
 import PlayerForm from "./PlayerForm";
+import WorldForm from "./WorldForm";
 import type { Player } from "../types/player"
 
 export default function CampaignForm() {
@@ -56,7 +57,7 @@ export default function CampaignForm() {
       onSubmit={handleSubmit}
       className="space-y-4 max-w-lg"
     >
-      <div>
+      <div className="space-y-6 border p-6 rounded">
         <label className="block mb-1 font-medium">
           Campaign Name
         </label>
@@ -99,6 +100,8 @@ export default function CampaignForm() {
           />
         ))}
       </div>
+
+      <WorldForm />
 
       <Button type="submit">
         Create Campaign
