@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+
 import Button from "./Button";
 import PlayerForm from "./PlayerForm";
 import WorldForm from "./WorldForm";
+import StoryBeatSection from "./StoryBeatSection";
+
 import type { Player } from "../types/player"
 
 export default function CampaignForm() {
@@ -102,6 +105,8 @@ export default function CampaignForm() {
       </div>
 
       <WorldForm />
+
+      <StoryBeatSection />
 
       <Button type="submit">
         Create Campaign
