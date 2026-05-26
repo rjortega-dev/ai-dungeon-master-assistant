@@ -118,7 +118,7 @@ export default function StoryBeatForm({
             )
           }
           placeholder="Objectives, notes, required events..."
-          className="border px-3 py-2 rounded w-full min-h-[120px]"
+          className="border px-3 py-2 rounded w-full min-h-30"
         />
     </div>
   )
