@@ -1,0 +1,289 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Comments {
+  id      Int     @id @default(autoincrement())
+  comment String?
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum BeatType {
+  MAIN_QUEST
+  SIDE_QUEST
+  ENCOUNTER
+  DIALOGUE
+  BOSS
+  ENDING
+}
+
+enum TransitionType {
+  SUCCESS
+  FAILURE
+  ACCEPT
+  REJECT
+  OPTIONAL
+  SECRET
+  COMBAT_WIN
+  COMBAT_LOSS
+}
+
+enum EventType {
+  COMBAT
+  DIALOGUE
+  DISCOVERY
+  QUEST_UPDATE
+  PLAYER_DECISION
+}
+
+enum GenerationType {
+  CAMPAIGN
+  STORY_BEAT
+  NPC
+  LOCATION
+}
+
+// ======================================================
+// USERS
+// ======================================================
+
+model User {
+  id           String @id @default(uuid()) @db.Uuid
+  email        String @unique
+  username     String @unique
+  passwordHash String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  campaigns       Campaign[]
+  characters      Character[]
+  locations       Location[]
+  activeCampaigns ActiveCampaign[]
+}
+
+// ======================================================
+// CAMPAIGNS
+// ======================================================
+
+model Campaign {
+  id String @id @default(uuid()) @db.Uuid
+
+  ownerUserId String @db.Uuid
+
+  title          String
+  description    String?
+  gameSystem     String?
+  settingSummary String?
+
+  status CampaignStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  owner User @relation(fields: [ownerUserId], references: [id])
+
+  campaignCharacters CampaignCharacter[]
+  campaignLocations  CampaignLocation[]
+
+  storyBeats      StoryBeat[]
+  activeCampaigns ActiveCampaign[]
+
+  @@index([ownerUserId])
+}
+
+model ActiveCampaign {
+  id              String           @id @default(uuid()) @db.Uuid
+  campaignID      String           @db.Uuid
+  dmUser          String           @db.Uuid
+  beatTransitions BeatTransition[]
+
+  campaign Campaign @relation(fields: [campaignID], references: [id])
+  dm       User     @relation(fields: [dmUser], references: [id])
+
+  @@index([campaignID])
+}
+
+// ======================================================
+// CHARACTERS
+// ======================================================
+
+model Character {
+  id String @id @default(uuid()) @db.Uuid
+
+  creatorUserId String @db.Uuid
+
+  name        String
+  race        String?
+  class       String?
+  background  String?
+  description String?
+
+  isNpc Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  creator User @relation(fields: [creatorUserId], references: [id])
+
+  campaignCharacters CampaignCharacter[]
+
+  @@index([creatorUserId])
+}
+
+// ======================================================
+// CAMPAIGN CHARACTERS (JUNCTION TABLE)
+// ======================================================
+
+model CampaignCharacter {
+  id String @id @default(uuid()) @db.Uuid
+
+  campaignId  String @db.Uuid
+  characterId String @db.Uuid
+
+  roleInCampaign String?
+  startingLevel  Int?
+  notes          String?
+  inventory      Json?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+
+  character Character @relation(fields: [characterId], references: [id])
+
+  @@unique([campaignId, characterId])
+  @@index([campaignId])
+  @@index([characterId])
+}
+
+// ======================================================
+// LOCATIONS
+// ======================================================
+
+model Location {
+  id String @id @default(uuid()) @db.Uuid
+
+  creatorUserId String @db.Uuid
+
+  name         String
+  locationType String?
+  description  String?
+
+  climate        String?
+  governmentType String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  creator User @relation(fields: [creatorUserId], references: [id])
+
+  campaignLocations CampaignLocation[]
+
+  @@index([creatorUserId])
+}
+
+// ======================================================
+// CAMPAIGN LOCATIONS (JUNCTION TABLE)
+// ======================================================
+
+model CampaignLocation {
+  id String @id @default(uuid()) @db.Uuid
+
+  campaignId String  @db.Uuid
+  locationId String  @db.Uuid
+  notes      String?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+
+  location Location @relation(fields: [locationId], references: [id])
+
+  @@unique([campaignId, locationId])
+  @@index([campaignId])
+  @@index([locationId])
+}
+
+// ======================================================
+// STORY BEATS
+// ======================================================
+
+model StoryBeat {
+  id String @id @default(uuid()) @db.Uuid
+
+  campaignId String @db.Uuid
+
+  title       String
+  description String?
+
+  beatType BeatType
+
+  sequenceOrder Int?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+
+  // Transition Relationships
+  outgoingTransitions BeatTransition[] @relation("FromBeat")
+
+  incomingTransitions BeatTransition[] @relation("ToBeat")
+
+  @@index([campaignId])
+}
+
+// ======================================================
+// BEAT TRANSITIONS
+// ======================================================
+
+model BeatTransition {
+  id String @id @default(uuid()) @db.Uuid
+
+  campaignId String @db.Uuid
+
+  fromBeatId String @db.Uuid
+  toBeatId   String @db.Uuid
+
+  transitionType TransitionType
+
+  conditionDescription String?
+
+  conditionJson Json?
+
+  isHidden Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  campaign ActiveCampaign @relation(fields: [campaignId], references: [id])
+
+  fromBeat StoryBeat @relation("FromBeat", fields: [fromBeatId], references: [id])
+
+  toBeat StoryBeat @relation("ToBeat", fields: [toBeatId], references: [id])
+
+  @@index([campaignId])
+  @@index([fromBeatId])
+  @@index([toBeatId])
+}
