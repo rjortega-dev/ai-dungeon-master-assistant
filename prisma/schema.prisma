@@ -1,13 +1,13 @@
 generator client {
   provider = "prisma-client-js"
-  output = "../generated"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-model comments {
+model Comments {
   id      Int     @id @default(autoincrement())
   comment String?
 }
@@ -72,8 +72,6 @@ model User {
   characters      Character[]
   locations       Location[]
   activeCampaigns ActiveCampaign[]
-
-  @@map("users")
 }
 
 // ======================================================
@@ -105,7 +103,6 @@ model Campaign {
   activeCampaigns ActiveCampaign[]
 
   @@index([ownerUserId])
-  @@map("campaigns")
 }
 
 model ActiveCampaign {
@@ -146,7 +143,6 @@ model Character {
   campaignCharacters CampaignCharacter[]
 
   @@index([creatorUserId])
-  @@map("characters")
 }
 
 // ======================================================
@@ -174,7 +170,6 @@ model CampaignCharacter {
   @@unique([campaignId, characterId])
   @@index([campaignId])
   @@index([characterId])
-  @@map("campaign_characters")
 }
 
 // ======================================================
@@ -202,7 +197,6 @@ model Location {
   campaignLocations CampaignLocation[]
 
   @@index([creatorUserId])
-  @@map("locations")
 }
 
 // ======================================================
@@ -226,7 +220,6 @@ model CampaignLocation {
   @@unique([campaignId, locationId])
   @@index([campaignId])
   @@index([locationId])
-  @@map("campaign_locations")
 }
 
 // ======================================================
@@ -259,7 +252,6 @@ model StoryBeat {
   incomingTransitions BeatTransition[] @relation("ToBeat")
 
   @@index([campaignId])
-  @@map("story_beats")
 }
 
 // ======================================================
@@ -294,5 +286,4 @@ model BeatTransition {
   @@index([campaignId])
   @@index([fromBeatId])
   @@index([toBeatId])
-  @@map("beat_transitions")
 }
