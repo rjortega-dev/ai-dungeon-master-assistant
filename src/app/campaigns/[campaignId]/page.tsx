@@ -62,7 +62,7 @@ export default function CampaignPage({
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-bolt">
+        <h2 className="text-2xl font-bold">
           Players
         </h2>
 
