@@ -68,7 +68,7 @@ export default function StoryBeatForm({
               e.target.value
             )
           }
-          className="border px-3 -y-2 rounded w-full"
+          className="border px-3 py-2 rounded w-full"
         >
           <option value="combat_encounter">
             Combat Encounter
