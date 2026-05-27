@@ -1,18 +1,21 @@
-import { sql } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
+import { getCampaign } from "@/features/campaigns/api/get-campaign";
 
-async function getDbVersion() {
-  const result = await sql`SELECT version()`;
-  return result[0].version as string;
-}
 
-export default async function Home() {
-  const version = await getDbVersion();
+export default async function CampaignPage() {
+  
+  const campaign = await getCampaign('d21c892c-cbc4-4409-97e2-4d62dcb87f1a');
+
+  if (!campaign) {
+    return <div>Campaign not found.</div>;
+  }
+
   return (
     <main>
-      <h1>Next.js + Neon</h1>
-      <p>PostgreSQL Version: {version}</p>
+      <pre>
+        {JSON.stringify(campaign, null, 2)}
+      </pre>
+
     </main>
   );
 }
