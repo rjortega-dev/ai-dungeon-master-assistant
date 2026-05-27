@@ -1,15 +1,21 @@
-"use client";
-
-import { useState } from "react";
-
 import Button from "./Button";
 import StoryBeatForm from "./StoryBeatForm";
 
 import type { StoryBeat } from "../types/storyBeat";
 
-export default function StoryBeatSection() {
-  const [storyBeats, setStoryBeats] = useState<StoryBeat[]>([]);
+type StoryBeatSectionProps = {
+  storyBeats: StoryBeat[];
 
+  setStoryBeats: (
+    storyBeats: StoryBeat[]
+  ) => void;
+};
+
+export default function StoryBeatSection({
+  storyBeats,
+  setStoryBeats,
+}: StoryBeatSectionProps) {
+  
   function addStoryBeat() {
     setStoryBeats([
       ...storyBeats,

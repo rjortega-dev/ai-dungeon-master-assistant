@@ -2,9 +2,8 @@ import CampaignForm from "@/app/components/CampaignForm"
 
 export default function NewCampaign() {
   return (
-    <div>
-      <div>Create a New Campaign</div>
+    <main className="p-6">
       <CampaignForm />
-    </div>
+    </main>
   )
 }
