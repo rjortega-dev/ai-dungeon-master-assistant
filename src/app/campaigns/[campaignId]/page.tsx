@@ -76,7 +76,7 @@ export default async function CampaignPage({
                   {beat[index].title}
                 </h3>
 
-                <p>{beat[index].title}</p>
+                <p>{beat[index].description}</p>
               </div>
             )
           )}
