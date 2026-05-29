@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
             campaignId: campaign.id,
             title: beat.title,
             description: beat.notes,
-            beatType: beat.type as any,
+            beatType: beat.type,
         });
     }
 
