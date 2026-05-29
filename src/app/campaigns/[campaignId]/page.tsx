@@ -1,3 +1,5 @@
+import Campaign from "../_actions/get-campaign-action";
+
 type CampaignPageProps = {
   params: {
     campaignId: string;
@@ -5,59 +7,27 @@ type CampaignPageProps = {
 };
 
 
-export default function CampaignPage({
+export default async function CampaignPage({
   params,
 }: CampaignPageProps) {
-  const { campaignId } = params;
-
+  const { campaignId } = await params;
+  const campaign =  await Campaign(campaignId)
   // Placeholder campaign data
-  const campaign = {
-    id: campaignId,
-
-    name: "Shadows of Eldoria",
-
-    setting: "Dark Fantasy",
-
-    players: [
-      {
-        name: "Kael",
-        characterClass: "Rogue",
-        level: 3,
-      },
-
-      {
-        name: "Lyra",
-        characterClass: "Wizard",
-        level: 2,
-      },
-    ],
-
-    storyBeats: [
-      {
-        title: "Meet the Tavern Keeper",
-        type: "meet_character",
-      },
-
-      {
-        title: "Explore the Forgotten Dungeon",
-        type: "exploration",
-      },
-    ],
-  };
+ 
 
   return (
     <main className="p-6 space-y-8">
       <section>
         <h1 className="text-4xl font-bold">
-          {campaign.name}
+          {campaign?.title}
         </h1>
 
         <p className="text-gray-500">
-          Campaign ID: {campaign.id}
+          Campaign ID: {campaign?.id}
         </p>
 
         <p className="mt-2">
-          Setting: {campaign.setting}
+          Setting: {campaign?.settingSummary}
         </p>
       </section>
 
@@ -67,7 +37,7 @@ export default function CampaignPage({
         </h2>
 
         <div className="grid gap-4">
-          {campaign.players.map(
+          {campaign?.players.map(
             (player, index) => (
               <div
                 key={index}
@@ -79,11 +49,11 @@ export default function CampaignPage({
 
                 <p>
                   Class:{" "}
-                  {player.characterClass}
+                  {player.class}
                 </p>
 
                 <p>
-                  Level: {player.level}
+                  Level: {player.campaignCharacters[index].startingLevel}
                 </p>
               </div>
             )
@@ -96,17 +66,17 @@ export default function CampaignPage({
           Story Beats
         </h2>
         <div className="grid gap-4">
-          {campaign.storyBeats.map(
+          {campaign?.storyBeats.map(
             (beat, index) => (
               <div
                 key={index}
                 className="border p-4 rounded"
               >
                 <h3 className="font-bold">
-                  {beat.title}
+                  {beat[index].title}
                 </h3>
 
-                <p>{beat.type}</p>
+                <p>{beat[index].description}</p>
               </div>
             )
           )}

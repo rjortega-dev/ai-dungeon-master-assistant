@@ -23,41 +23,52 @@ An AI-powered dungeon master assistant built with Next.js, Tailwind CSS, Prisma,
 ### Local Development Setup
 
 **1. Clone the repo**
+
 ```bash
 git clone git@github-personal:rjortega-dev/ai-dungeon-master-assistant.git
 cd ai-dungeon-master-assistant
 ```
 
 **2. Install dependencies**
+
 ```bash
 npm install
 ```
 
 **3. Set up environment variables**
+
 ```bash
 cp .env.example .env
 ```
+
 Then open `.env` and fill in your `OPENAI_API_KEY`.
 
 **4. Start the local database**
+
 ```bash
 docker compose up -d
 ```
+
 This starts a local PostgreSQL database in a Docker container running in the background. You need Docker installed and running before this step. The `-d` flag runs it in detached mode so it doesn't block your terminal.
 
 **5. Push the Prisma schema to your local database**
+
 ```bash
 npx prisma db push
 ```
+
 This creates all the database tables locally based on the Prisma schema.
 
 **6. Seed the database with test data**
+
 ```bash
 npx prisma db seed
 ```
+
 This populates your local database with sample data so you have something to work with.
 
 **7. Start the development server**
+
 ```bash
 npm run dev
 ```
