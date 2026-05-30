@@ -3,7 +3,8 @@
 import { prisma } from "@/lib/prisma/prisma";
 import { CampaignStatus } from "../../../../generated/prisma";
 
-type CreateCampaignInput = {
+//export local type for creation
+export type CreateCampaignInput = {
   ownerUserId: string;
   title: string;
   description?: string;
