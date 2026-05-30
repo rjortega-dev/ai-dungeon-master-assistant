@@ -1,6 +1,5 @@
 import { getCampaignWorld } from "@/features/campaigns/api/get-active-campaign-world";
 
-export default async function Campaign(id:string) {
-   const campaign = await getCampaignWorld(id)
-   return campaign
+export default function Campaign(id:string) {
+   return getCampaignWorld(id);
 }
