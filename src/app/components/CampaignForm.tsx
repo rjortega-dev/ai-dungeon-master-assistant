@@ -49,7 +49,7 @@ export default function CampaignForm() {
 
       const campaign = await res.json();
 
-      router.push(`/campaigns${campaign.id}`);
+      router.push(`/campaigns/${campaign.id}`);
     } catch (err) {
       console.error("Network error:", err);
     }
