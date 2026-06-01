@@ -73,7 +73,7 @@ export async function getCampaignWorld(
         campaignCharacter.character
     );
 
-  const storyBeats = [campaign.storyBeats]
+  const storyBeats = campaign.storyBeats
 
   const npcs = campaign.campaignCharacters
     .filter(

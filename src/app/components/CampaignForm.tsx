@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import Button from "./Button";
 import PlayerSection from "./PlayerSection";
 import WorldForm from "./WorldForm";
@@ -10,6 +12,7 @@ import StoryBeatSection from "./StoryBeatSection";
 import type { Campaign } from "../types/campaign"
 
 export default function CampaignForm() {
+    const router = useRouter();
     const [campaignData, setCampaignData] = useState<Campaign>({
     campaignName: "",
 
@@ -24,15 +27,33 @@ export default function CampaignForm() {
     storyBeats: [],
   });
 
-    function handleSubmit(e: React.SubmitEvent) {
+  console.log("Submitting campaign:", campaignData);
+
+  async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
 
-    // Placeholder
-    console.log(campaignData);
+    try {
+      const res = await fetch("/api/campaigns", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(campaignData),
+      });
 
-    alert(
-      "Campaign created! (placeholder)"
-    );
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Create campaign failed:", error);
+        return;
+      }
+
+      const campaign = await res.json();
+
+      router.push(`/campaigns/${campaign.id}`);
+    } catch (err) {
+      console.error("Network error:", err);
+    }
+
   }
 
   return (

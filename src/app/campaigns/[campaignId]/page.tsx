@@ -1,17 +1,23 @@
+import { notFound } from "next/navigation";
+
 import Campaign from "../_actions/get-campaign-action";
 
 type CampaignPageProps = {
-  params: {
+  params: Promise<{
     campaignId: string;
-  };
+  }>;
 };
 
 
 export default async function CampaignPage({
   params,
 }: CampaignPageProps) {
-  const { campaignId } = await params;
-  const campaign =  await Campaign(campaignId)
+  const { campaignId } =  await params;
+  const campaign =  await Campaign(campaignId);
+
+  if (!campaign) {
+    notFound();
+  }
   // Placeholder campaign data
  
 
@@ -37,10 +43,16 @@ export default async function CampaignPage({
         </h2>
 
         <div className="grid gap-4">
-          {campaign?.players.map(
-            (player, index) => (
+          {campaign?.players.map((player) => {
+            const level =
+              player.campaignCharacters.find(
+                (cc) =>
+                  cc.campaignId === campaign.id
+              )?.startingLevel;
+              
+              return (
               <div
-                key={index}
+                key={player.id}
                 className="border p-4 rounded"
               >
                 <h3 className="font-bold">
@@ -48,16 +60,15 @@ export default async function CampaignPage({
                 </h3>
 
                 <p>
-                  Class:{" "}
-                  {player.class}
+                  Class: {player.class}
                 </p>
 
                 <p>
-                  Level: {player.campaignCharacters[index].startingLevel}
+                  Level: {level ?? "Unknown"}
                 </p>
               </div>
             )
-          )}
+          })}
         </div>
       </section>
 
@@ -67,16 +78,16 @@ export default async function CampaignPage({
         </h2>
         <div className="grid gap-4">
           {campaign?.storyBeats.map(
-            (beat, index) => (
+            (beat) => (
               <div
-                key={index}
+                key={beat.id}
                 className="border p-4 rounded"
               >
                 <h3 className="font-bold">
-                  {beat[index].title}
+                  {beat.title}
                 </h3>
 
-                <p>{beat[index].description}</p>
+                <p>{beat.description}</p>
               </div>
             )
           )}
