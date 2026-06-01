@@ -14,6 +14,30 @@ import { prisma } from "@/lib/prisma/prisma";
 export async function POST(request: NextRequest) {
     const body = await request.json();
 
+    const mapBeatType = (type: string) => {
+      switch (type) {
+        case "combat_encounter":
+          return "ENCOUNTER";
+        
+        case "meet_character":
+        case "social_encounter":
+          return "DIALOGUE";
+        
+        case "find_item":
+        case "exploration":
+        case "travel":
+        case "puzzle":
+        case "other":
+          return "SIDE_QUEST";
+
+        case "boss_fight":
+          return "BOSS";
+
+        default:
+          return "SIDE_QUEST";
+      }
+    }
+
     // grab first user in db as placeholder
     const tempUser = await prisma.user.findFirst();
     if (!tempUser) {
@@ -31,7 +55,7 @@ export async function POST(request: NextRequest) {
     });
 
     // character creation
-    for (const player of body.players) {
+    for (const player of body.players ?? []) {
         const character = await createCharacter({
             creatorUserId: tempUser.id,
             name: player.characterName,
@@ -50,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // location creation
-    for (const location of body.world.locations) {
+    for (const location of body.world.locations ?? []) {
         const newLocation = await createLocation({
             creatorUserId: tempUser.id,
             name: location.name,
@@ -66,12 +90,12 @@ export async function POST(request: NextRequest) {
 
     // create campaign story beats
     // TODO: reconcile beat types to BeatType enum
-    for (const beat of body.storyBeats) {
+    for (const beat of body.storyBeats ?? []) {
         await createStoryBeat({
             campaignId: campaign.id,
             title: beat.title,
             description: beat.notes,
-            beatType: beat.type as any,
+            beatType: mapBeatType(beat.type),
         });
     }
 
