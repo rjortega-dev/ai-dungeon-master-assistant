@@ -5,7 +5,7 @@ export const PlayerCharacterSchema = z.object({
   characterName: z.string(),
   characterClass: z.string(),
   characterRace: z.string(),
-  characterLevel: z.number().int().positive(),
+  characterLevel: z.number().int().positive().default(0),
   notes: z.string(),
 });
 
@@ -45,16 +45,20 @@ export const StoryBeatSchema = z.object({
 
 export const CampaignPromptInputSchema = z.object({
 
-    campaignName: z.string(),
+    campaignName: z.string().default(""),
 
-    worldSetting: WorldSettingSchema,
+    worldSetting: WorldSettingSchema.default({
+      name: "",
+      settingStyle: "",
+      locations: [],
+    }),
 
     players: z
-        .array(PlayerCharacterSchema)
+        .array(PlayerCharacterSchema).default([])
         ,
 
     storyBeats: z
-        .array(StoryBeatSchema)
+        .array(StoryBeatSchema).default([])
         ,
 });
 

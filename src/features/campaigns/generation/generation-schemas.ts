@@ -30,28 +30,26 @@ export const TransitionTypeSchema = z.enum([
 export const LocationSchema = z.object({
   name: z.string().min(1),
 
-  locationType: z.string().optional(),
+  locationType: z.string().optional().nullable(),
 
-  description: z.string().optional(),
+  description: z.string().optional().nullable(),
 
-  climate: z.string().optional(),
+  climate: z.string().optional().nullable(),
 
-  governmentType: z.string().optional(),
+  governmentType: z.string().optional().nullable(),
   
 });
 
 
 export const StoryBeatSchema = z.object({
     title: z.string().min(1),
-    description: z.string().optional(),
+    description: z.string().optional().nullable(),
     
     beatType: BeatTypeSchema,
 
-    location: LocationSchema.optional(),
+    location: LocationSchema.optional().nullable(),
     
     sequenceOrder: z.number().int().nonnegative(),
-    
-    metadata: z.record(z.string(), z.unknown()).optional(),
 });
 export const BeatTransitionSchema = z.object({
     fromSequence: z.number().int().nonnegative(),
@@ -59,7 +57,7 @@ export const BeatTransitionSchema = z.object({
     
     transitionType: TransitionTypeSchema,
     
-    conditionDescription: z.string().optional(),
+    conditionDescription: z.string().optional().nullable(),
     
     isHidden: z.boolean().default(false),
 });

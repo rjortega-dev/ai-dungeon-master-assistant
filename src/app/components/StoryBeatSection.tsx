@@ -1,7 +1,7 @@
 import Button from "./Button";
 import StoryBeatForm from "./StoryBeatForm";
 
-import type { StoryBeat } from "../types/storyBeat";
+import type { StoryBeat } from "../../features/campaigns/generation/input-schemas";
 
 type StoryBeatSectionProps = {
   storyBeats: StoryBeat[];
@@ -22,8 +22,8 @@ export default function StoryBeatSection({
 
       {
         title: "",
-        importance: "main_story",
-        type: "exploration",
+        storyBeatType: "Main Story",
+        beatTaskType: "Exploration",
         notes: "",
       },
     ]);

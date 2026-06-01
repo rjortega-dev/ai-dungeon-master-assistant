@@ -9,28 +9,19 @@ import PlayerSection from "./PlayerSection";
 import WorldForm from "./WorldForm";
 import StoryBeatSection from "./StoryBeatSection";
 
-import type { Campaign } from "../types/campaign"
+import { CampaignPromptInput, CampaignPromptInputSchema } from "@/features/campaigns/generation/input-schemas";
+import { GenerateCampaign } from "../campaigns/_actions/generate-campaign-action";
 
 export default function CampaignForm() {
     const router = useRouter();
-    const [campaignData, setCampaignData] = useState<Campaign>({
-    campaignName: "",
-
-    players: [],
-
-    world: {
-      settingName: "",
-      settingStyle: "",
-      locations: [],
-    },
-
-    storyBeats: [],
-  });
+    const [campaignData, setCampaignData] = useState<CampaignPromptInput>(CampaignPromptInputSchema.parse({}));
 
   console.log("Submitting campaign:", campaignData);
 
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
+    const res = await GenerateCampaign(campaignData)
+    console.log(res)
 
     try {
       const res = await fetch("/api/campaigns", {
@@ -86,11 +77,11 @@ export default function CampaignForm() {
       />
 
       <WorldForm 
-        world={campaignData.world}
+        world={campaignData.worldSetting}
         setWorld={(world) =>
           setCampaignData({
             ...campaignData,
-            world,
+            worldSetting: world,
           })
         }
       />

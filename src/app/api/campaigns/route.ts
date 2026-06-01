@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const campaign = await createCampaign({
         ownerUserId: tempUser.id,
         title: body.campaignName,
-        settingSummary: body.world.settingName
+        settingSummary: body.world.name
     });
 
     // character creation

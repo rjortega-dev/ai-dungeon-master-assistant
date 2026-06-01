@@ -2,10 +2,11 @@ import Button from "./Button";
 import LocationForm from "./LocationForm";
 
 import type { World } from "../types/world";
+import { WorldSetting } from "@/features/campaigns/generation/input-schemas";
 
 type WorldFormProps = {
-  world: World;
-  setWorld: (world: World) => void;
+  world: WorldSetting;
+  setWorld: (world: WorldSetting) => void;
 }
 
 export default function WorldForm({
@@ -50,11 +51,11 @@ export default function WorldForm({
       </h2>
 
       <input
-        value={world.settingName}
+        value={world.name}
         onChange={(e) =>
           setWorld({
             ...world,
-            settingName: e.target.value,
+            name: e.target.value,
           })
         }
         placeholder="Primary Setting Name"

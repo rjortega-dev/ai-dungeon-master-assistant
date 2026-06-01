@@ -2,6 +2,9 @@ import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import { z, ZodTypeAny } from "zod";
 
+console.log("API key exists:", !!process.env.OPENAI_API_KEY);
+console.log("cwd:", process.cwd());
+
 const client = new OpenAI();
 
 export default async function generateStructuredOutput<
