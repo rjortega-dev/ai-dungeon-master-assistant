@@ -16,12 +16,16 @@ export default function CampaignForm() {
     const router = useRouter();
     const [campaignData, setCampaignData] = useState<CampaignPromptInput>(CampaignPromptInputSchema.parse({}));
 
-  console.log("Submitting campaign:", campaignData);
-
-  async function handleSubmit(e: React.SubmitEvent) {
+    
+    async function handleSubmit(e: React.SubmitEvent) {
+    console.log("Submitting campaign:", campaignData);
     e.preventDefault();
-    const res = await GenerateCampaign(campaignData)
-    console.log(res)
+
+    const generatedCampaign = await GenerateCampaign(campaignData)
+    console.log(generatedCampaign)
+    
+    const combinedData = {...campaignData, ...generatedCampaign};
+    console.log(combinedData)
 
     try {
       const res = await fetch("/api/campaigns", {
@@ -29,7 +33,7 @@ export default function CampaignForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(campaignData),
+        body: JSON.stringify(combinedData),
       });
 
       if (!res.ok) {

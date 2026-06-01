@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PlayerCharacterSchema } from "./input-schemas";
 
 export const CampaignStatusSchema = z.enum([
   "DRAFT",
@@ -75,6 +76,8 @@ export const GeneratedCampaignSchema = z.object({
     .array(StoryBeatSchema)
     .min(3),
     
+    players: z.array(PlayerCharacterSchema),
+
     transitions: z.array(
         BeatTransitionSchema
     ),
