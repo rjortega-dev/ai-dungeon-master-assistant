@@ -37,7 +37,7 @@ export default function PlayerSection({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-accent">Players</h2>
+      <h2 className="text-xl font-semibold text-accent-text">Players</h2>
       <Button type="button" onClick={addPlayer}>
         Add Player
       </Button>

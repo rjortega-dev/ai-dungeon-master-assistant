@@ -4,7 +4,7 @@ export default function NewCampaign() {
   return (
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
       <div className="mb-8">
-        <p className="text-accent text-xs font-mono tracking-widest uppercase mb-2">
+        <p className="text-accent-text text-xs font-mono tracking-widest uppercase mb-2 font-semibold">
           Dungeon Master Assistant
         </p>
         <h1 className="text-3xl font-bold text-foreground">New Campaign</h1>

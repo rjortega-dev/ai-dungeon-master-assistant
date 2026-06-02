@@ -30,7 +30,7 @@ export default function StoryBeatSection({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-accent">Story Beats</h2>
+      <h2 className="text-xl font-semibold text-accent-text">Story Beats</h2>
       <Button type="button" onClick={addStoryBeat}>
         Add Story Beat
       </Button>

@@ -30,7 +30,7 @@ export default function WorldForm({ world, setWorld }: WorldFormProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-accent">World Building</h2>
+      <h2 className="text-xl font-semibold text-accent-text">World Building</h2>
       <input
         value={world.settingName}
         onChange={(e) => setWorld({ ...world, settingName: e.target.value })}

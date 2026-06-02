@@ -18,7 +18,7 @@ export default function Home() {
       <main className="w-full max-w-md">
         <div className="rounded-xl border border-accent/40 bg-card py-14 px-10 shadow-2xl shadow-black/60 space-y-8">
           <div className="text-center space-y-3">
-            <p className="text-accent text-xs font-mono tracking-widest uppercase">
+            <p className="text-accent-text text-xs font-mono tracking-widest uppercase font-semibold">
               AI Dungeon Master
             </p>
             <h1 className="text-4xl font-bold text-foreground leading-snug">
