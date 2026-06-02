@@ -1,4 +1,4 @@
-import type { StoryBeat } from "../types/storyBeat";
+import type { StoryBeat } from "../../features/campaigns//generation/input-schemas"
 
 type StoryBeatFormProps = {
   storyBeat: StoryBeat;
@@ -39,11 +39,11 @@ export default function StoryBeatForm({
 
       {/* IMPORTANCE */}
       <select
-        value={storyBeat.importance}
+        value={storyBeat.storyBeatType}
         onChange={(e) =>
           updateStoryBeat(
             index,
-            "importance",
+            "storyBeatType",
             e.target.value
           )
         }
@@ -60,11 +60,11 @@ export default function StoryBeatForm({
 
         {/* TYPE */}
         <select
-          value={storyBeat.type}
+          value={storyBeat.beatTaskType}
           onChange={(e) =>
             updateStoryBeat(
               index,
-              "type",
+              "beatTaskType",
               e.target.value
             )
           }

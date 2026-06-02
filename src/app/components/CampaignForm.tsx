@@ -9,28 +9,23 @@ import PlayerSection from "./PlayerSection";
 import WorldForm from "./WorldForm";
 import StoryBeatSection from "./StoryBeatSection";
 
-import type { Campaign } from "../types/campaign"
+import { CampaignPromptInput, CampaignPromptInputSchema } from "@/features/campaigns/generation/input-schemas";
+import { GenerateCampaign } from "../campaigns/_actions/generate-campaign-action";
 
 export default function CampaignForm() {
     const router = useRouter();
-    const [campaignData, setCampaignData] = useState<Campaign>({
-    campaignName: "",
+    const [campaignData, setCampaignData] = useState<CampaignPromptInput>(CampaignPromptInputSchema.parse({}));
 
-    players: [],
-
-    world: {
-      settingName: "",
-      settingStyle: "",
-      locations: [],
-    },
-
-    storyBeats: [],
-  });
-
-  console.log("Submitting campaign:", campaignData);
-
-  async function handleSubmit(e: React.SubmitEvent) {
+    
+    async function handleSubmit(e: React.SubmitEvent) {
+    console.log("Submitting campaign:", campaignData);
     e.preventDefault();
+
+    const generatedCampaign = await GenerateCampaign(campaignData)
+    console.log(generatedCampaign)
+    
+    const combinedData = {...campaignData, ...generatedCampaign};
+    console.log(combinedData)
 
     try {
       const res = await fetch("/api/campaigns", {
@@ -38,7 +33,7 @@ export default function CampaignForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(campaignData),
+        body: JSON.stringify(combinedData),
       });
 
       if (!res.ok) {
@@ -86,11 +81,11 @@ export default function CampaignForm() {
       />
 
       <WorldForm 
-        world={campaignData.world}
+        world={campaignData.worldSetting}
         setWorld={(world) =>
           setCampaignData({
             ...campaignData,
-            world,
+            worldSetting: world,
           })
         }
       />

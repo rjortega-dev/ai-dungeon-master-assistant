@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const campaign = await createCampaign({
         ownerUserId: tempUser.id,
         title: body.campaignName,
-        settingSummary: body.world.settingName
+        settingSummary: body.worldSetting.name
     });
 
     // character creation
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     // location creation
-    for (const location of body.world.locations ?? []) {
+    for (const location of body.worldSetting.locations ?? []) {
         const newLocation = await createLocation({
             creatorUserId: tempUser.id,
             name: location.name,
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         await createStoryBeat({
             campaignId: campaign.id,
             title: beat.title,
-            description: beat.notes,
+            description: beat.description,
             beatType: mapBeatType(beat.type),
         });
     }
