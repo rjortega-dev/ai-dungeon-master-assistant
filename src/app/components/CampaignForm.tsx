@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Button from "./Button";
 import PlayerSection from "./PlayerSection";
 import WorldForm from "./WorldForm";
+import StoryBeatSection from "./StoryBeatSection";
 import {
   CampaignPromptInput,
   CampaignPromptInputSchema,
@@ -72,6 +73,13 @@ export default function CampaignForm() {
             ...campaignData,
             worldSetting: world,
           })
+        }
+      />
+
+      <StoryBeatSection
+        storyBeats={campaignData.storyBeats}
+        setStoryBeats={(storyBeats) =>
+          setCampaignData({ ...campaignData, storyBeats })
         }
       />
 
