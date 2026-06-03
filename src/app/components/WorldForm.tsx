@@ -1,10 +1,10 @@
 import Button from "./Button";
 import LocationForm from "./LocationForm";
-import type { World } from "../types/world";
+import { WorldSetting } from "@/features/campaigns/generation/input-schemas";
 
 type WorldFormProps = {
-  world: World;
-  setWorld: (world: World) => void;
+  world: WorldSetting;
+  setWorld: (world: WorldSetting) => void;
 };
 
 const inputClass =
@@ -32,8 +32,8 @@ export default function WorldForm({ world, setWorld }: WorldFormProps) {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-accent-text">World Building</h2>
       <input
-        value={world.settingName}
-        onChange={(e) => setWorld({ ...world, settingName: e.target.value })}
+        value={world.name}
+        onChange={(e) => setWorld({ ...world, name: e.target.value })}
         placeholder="Primary Setting Name"
         className={inputClass}
       />

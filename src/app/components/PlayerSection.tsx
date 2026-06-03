@@ -1,10 +1,11 @@
 import Button from "./Button";
 import PlayerForm from "./PlayerForm";
 import type { Player } from "../types/player";
+import { PlayerCharacter } from "@/features/campaigns/generation/input-schemas";
 
 type PlayerSectionProps = {
-  players: Player[];
-  setPlayers: (players: Player[]) => void;
+  players: PlayerCharacter[];
+  setPlayers: (players: PlayerCharacter[]) => void;
 };
 
 export default function PlayerSection({
@@ -18,7 +19,7 @@ export default function PlayerSection({
         playerName: "",
         characterName: "",
         characterClass: "",
-        characterLevel: null,
+        characterLevel: 0,
         characterRace: "",
         notes: "",
       },
