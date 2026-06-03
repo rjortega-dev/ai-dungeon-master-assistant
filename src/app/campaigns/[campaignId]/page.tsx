@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-
 import Campaign from "../_actions/get-campaign-action";
 
 type CampaignPageProps = {
@@ -15,34 +14,41 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
   if (!campaign) {
     notFound();
   }
-  // Placeholder campaign data
 
   return (
-    <main className="p-6 space-y-8">
-      <section>
-        <h1 className="text-4xl font-bold">{campaign?.title}</h1>
-
-        <p className="text-gray-500">Campaign ID: {campaign?.id}</p>
-
-        <p className="mt-2">Setting: {campaign?.settingSummary}</p>
+    <main className="min-h-screen p-8 max-w-4xl mx-auto space-y-10">
+      <section className="border-b border-accent/20 pb-6">
+        <p className="text-accent text-xs font-mono tracking-widest uppercase mb-2">
+          Campaign
+        </p>
+        <h1 className="text-4xl font-bold text-foreground mb-1">
+          {campaign?.title}
+        </h1>
+        <p className="text-muted text-sm">ID: {campaign?.id}</p>
+        {campaign?.settingSummary && (
+          <p className="mt-3 text-foreground/80">{campaign?.settingSummary}</p>
+        )}
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold">Players</h2>
-
-        <div className="grid gap-4">
+        <h2 className="text-xl font-semibold text-accent tracking-wide">
+          Players
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
           {campaign?.players.map((player) => {
             const level = player.campaignCharacters.find(
               (cc) => cc.campaignId === campaign.id,
             )?.startingLevel;
 
             return (
-              <div key={player.id} className="border p-4 rounded">
-                <h3 className="font-bold">{player.name}</h3>
-
-                <p>Class: {player.class}</p>
-
-                <p>Level: {level ?? "Unknown"}</p>
+              <div
+                key={player.id}
+                className="bg-card border border-accent/20 rounded-lg p-4 hover:border-accent/50 transition-colors"
+              >
+                <h3 className="font-bold text-foreground">{player.name}</h3>
+                <p className="text-muted text-sm mt-1">
+                  {player.class} · Level {level ?? "?"}
+                </p>
               </div>
             );
           })}
@@ -50,13 +56,17 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-bold">Story Beats</h2>
-        <div className="grid gap-4">
+        <h2 className="text-xl font-semibold text-accent tracking-wide">
+          Story Beats
+        </h2>
+        <div className="grid gap-3">
           {campaign?.storyBeats.map((beat) => (
-            <div key={beat.id} className="border p-4 rounded">
-              <h3 className="font-bold">{beat.title}</h3>
-
-              <p>{beat.description}</p>
+            <div
+              key={beat.id}
+              className="bg-card border border-accent/20 rounded-lg p-4 hover:border-accent/50 transition-colors"
+            >
+              <h3 className="font-bold text-foreground mb-1">{beat.title}</h3>
+              <p className="text-foreground/70 text-sm">{beat.description}</p>
             </div>
           ))}
         </div>
