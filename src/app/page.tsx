@@ -8,40 +8,39 @@ export default function Home() {
   const router = useRouter();
   const [campaignId, setCampaignId] = useState("");
 
-  //placeholder until backend exists
   function goToCampaign(id: string) {
     if (!id) return;
-
-    console.log("Navigating to campaign:", id);
-
     router.push(`/campaigns/${id}`);
   }
 
-
-
   return (
-    <div>
-      <main>
-        <div className="flex items-center justify-center h-screen">
-          <div className="rounded-lg border-2 border-black pt-40 pb-40 pl-10 pr-10 max-w-4xl">
-            <h1 className="text-5xl text-center">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <main className="w-full max-w-md">
+        <div className="rounded-xl border border-accent/40 bg-card py-14 px-10 shadow-2xl shadow-black/60 space-y-8">
+          <div className="text-center space-y-3">
+            <p className="text-accent-text text-xs font-mono tracking-widest uppercase font-semibold">
+              AI Dungeon Master
+            </p>
+            <h1 className="text-4xl font-bold text-foreground leading-snug">
               Welcome!
-                <br></br>
-              I&apos;m Merlin, your Dungeon Master Assistant!
+              <br />
+              I&apos;m Merlin, your{" "}
+              <span className="text-accent">Dungeon Master Assistant</span>
             </h1>
-            <div className="justify-self-center">
-              <Button onClick={() => router.push("/campaigns/new")}>
-                Create Campaign
-              </Button>
-            </div>
-            <div className="justify-self-center">
+          </div>
+
+          <div className="space-y-4">
+            <Button onClick={() => router.push("/campaigns/new")}>
+              Create Campaign
+            </Button>
+
+            <div className="space-y-2">
               <input
                 value={campaignId}
                 onChange={(e) => setCampaignId(e.target.value)}
                 placeholder="Enter campaign ID"
-                className="border px-3 py-2 rounded w-full max-w-sm"
+                className="bg-background border border-accent/30 text-foreground placeholder:text-muted px-3 py-2 rounded-lg w-full focus:outline-none focus:border-accent transition-colors"
               />
-              <br></br>
               <Button onClick={() => goToCampaign(campaignId)}>
                 Go to Campaign
               </Button>

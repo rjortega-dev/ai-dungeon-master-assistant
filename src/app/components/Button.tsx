@@ -9,15 +9,15 @@ type ButtonProps = {
 export default function Button({
   children,
   onClick,
-  type="button",
+  type = "button",
 }: ButtonProps) {
   return (
     <button
       type={type}
       onClick={onClick}
-      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+      className="w-full px-4 py-2.5 bg-accent text-background font-semibold rounded-lg hover:bg-accent/85 active:scale-95 transition-all cursor-pointer"
     >
       {children}
     </button>
-  )
+  );
 }

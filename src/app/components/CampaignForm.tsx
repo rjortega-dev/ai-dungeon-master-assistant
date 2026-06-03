@@ -1,31 +1,32 @@
 "use client";
 
 import { useState } from "react";
-
 import { useRouter } from "next/navigation";
-
 import Button from "./Button";
 import PlayerSection from "./PlayerSection";
 import WorldForm from "./WorldForm";
 import StoryBeatSection from "./StoryBeatSection";
-
-import { CampaignPromptInput, CampaignPromptInputSchema } from "@/features/campaigns/generation/input-schemas";
+import {
+  CampaignPromptInput,
+  CampaignPromptInputSchema,
+} from "@/features/campaigns/generation/input-schemas";
 import { GenerateCampaign } from "../campaigns/_actions/generate-campaign-action";
 
 export default function CampaignForm() {
-    const router = useRouter();
-    const [campaignData, setCampaignData] = useState<CampaignPromptInput>(CampaignPromptInputSchema.parse({}));
+  const router = useRouter();
+  const [campaignData, setCampaignData] = useState<CampaignPromptInput>(
+    CampaignPromptInputSchema.parse({}),
+  );
 
-    
-    async function handleSubmit(e: React.SubmitEvent) {
+  async function handleSubmit(e: React.SubmitEvent) {
     console.log("Submitting campaign:", campaignData);
     e.preventDefault();
 
-    const generatedCampaign = await GenerateCampaign(campaignData)
-    console.log(generatedCampaign)
-    
-    const combinedData = {...campaignData, ...generatedCampaign};
-    console.log(combinedData)
+    const generatedCampaign = await GenerateCampaign(campaignData);
+    console.log(generatedCampaign);
+
+    const combinedData = { ...campaignData, ...generatedCampaign };
+    console.log(combinedData);
 
     try {
       const res = await fetch("/api/campaigns", {
@@ -43,44 +44,29 @@ export default function CampaignForm() {
       }
 
       const campaign = await res.json();
-
       router.push(`/campaigns/${campaign.id}`);
     } catch (err) {
       console.error("Network error:", err);
     }
-
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-8"
-    >
-
+    <form onSubmit={handleSubmit} className="space-y-8">
       <input
         value={campaignData.campaignName}
-        onChange={(e) => 
-          setCampaignData({
-            ...campaignData,
-            campaignName:
-              e.target.value
-            })
-          }
-          className="border px-3 py-2 rounded w-full"
-          placeholder="Campaign Name"
+        onChange={(e) =>
+          setCampaignData({ ...campaignData, campaignName: e.target.value })
+        }
+        placeholder="Campaign Name"
+        className="bg-background border border-accent/30 text-foreground placeholder:text-muted px-3 py-2 rounded-lg w-full focus:outline-none focus:border-accent transition-colors"
       />
 
       <PlayerSection
         players={campaignData.players}
-        setPlayers={(players) =>
-          setCampaignData({
-            ...campaignData,
-            players,
-          })
-        }
+        setPlayers={(players) => setCampaignData({ ...campaignData, players })}
       />
 
-      <WorldForm 
+      <WorldForm
         world={campaignData.worldSetting}
         setWorld={(world) =>
           setCampaignData({
@@ -90,23 +76,14 @@ export default function CampaignForm() {
         }
       />
 
-      <StoryBeatSection 
-        storyBeats={
-          campaignData.storyBeats
-        }
-        setStoryBeats={(
-          storyBeats
-        ) =>
-          setCampaignData({
-            ...campaignData,
-            storyBeats,
-          })
+      <StoryBeatSection
+        storyBeats={campaignData.storyBeats}
+        setStoryBeats={(storyBeats) =>
+          setCampaignData({ ...campaignData, storyBeats })
         }
       />
 
-      <Button type="submit">
-        Create Campaign
-      </Button>
+      <Button type="submit">Create Campaign</Button>
     </form>
-  )
+  );
 }
