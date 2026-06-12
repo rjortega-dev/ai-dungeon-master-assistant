@@ -29,12 +29,42 @@ export function campaignPrompt(input: CampaignPromptInput){
 
 
     return `
+    YOU ARE DESIGNING A TABLETOP RPG CAMPAIGN.
+
+    === CORE CAMPAIGN INFO ===
     CampaignName: ${input.campaignName}
     WorldSetting: ${input.worldSetting.name}
     SettingStyle: ${input.worldSetting.settingStyle}
-    CampaignCharacters: ${players}
-    Locations: ${locations}
-    StoryBeats: ${storyBeats}
+
+    === NARRATIVE DIRECTION (CRITICAL) ===
+    Genre: ${input.genre ?? "unspecified"}
+    Tone: ${input.tone ?? "unspecified"}
+    Inspiration: ${input.inspiration ?? "none provided"}
+    Central Conflict: ${input.centralConflict ?? "none provided"}
+    Ultimate Goal: ${input.ultimateGoal ?? "none provided"}
+
+    === GAME STRUCTURE ===
+    Starting Level: ${input.startingLevel ?? "unspecified"}
+    Ending Level: ${input.endingLevel ?? "unspecified"}
+
+    === CHARACTERS ===
+    ${players}
+
+    === LOCATIONS ===
+    ${locations}
+
+    === EXISTING STORY BEATS (if any) ===
+    ${storyBeats}
+
+    === DESIGN REQUIREMENTS ===
+    - Tone MUST be consistent with the "Tone" field
+    - Genre MUST influence worldbuilding, enemies, and quest structure
+    - Central Conflict MUST drive the main story arc
+    - Ultimate Goal MUST define the final campaign resolution
+    - Starting/Ending Level MUST influence difficulty scaling
+    - Inspiration should shape narrative themes and quest design
+
+    Return a fully structured campaign in valid JSON matching the schema.
     `
 }
 

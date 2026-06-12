@@ -51,7 +51,18 @@ export async function POST(request: NextRequest) {
     const campaign = await createCampaign({
         ownerUserId: tempUser.id,
         title: body.campaignName,
-        settingSummary: body.worldSetting.name
+        settingSummary: body.worldSetting.name,
+        gameSystem: body.gameSystem,
+        edition: body.edition,
+        isHomebrew: body.isHomebrew,
+        startingLevel: body.startingLevel,
+        endingLevel: body.endingLevel,
+        genre: body.genre,
+        tone: body.tone,
+        primaryThemes: body.primaryThemes,
+        inspiration: body.inspiration,
+        centralConflict: body.centralConflict,
+        ultimateGoal: body.ultimateGoal,
     });
 
     // character creation

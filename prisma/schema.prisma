@@ -88,6 +88,22 @@ model Campaign {
   gameSystem     String?
   settingSummary String?
 
+  edition String?
+
+  isHomebrew Boolean @default(false)
+
+  startingLevel Int?
+  endingLevel Int?
+
+  genre String?
+  tone String?
+
+  primaryThemes String?
+  inspiration String?
+
+  centralConflict String?
+  ultimateGoal String?
+
   status CampaignStatus @default(DRAFT)
 
   createdAt DateTime @default(now())
