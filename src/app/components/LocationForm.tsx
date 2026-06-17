@@ -25,10 +25,57 @@ export default function LocationForm({
         placeholder="Location Name"
         className={inputClass}
       />
+      <input
+        value={location.locationType}
+        onChange={(e) => updateLocation(index, "locationType", e.target.value)}
+        placeholder="Location Type"
+        className={inputClass}
+      />
       <textarea
         value={location.description}
         onChange={(e) => updateLocation(index, "description", e.target.value)}
         placeholder="Location Description"
+        className={inputClass}
+      />
+      <input
+        value={location.climate}
+        onChange={(e) => updateLocation(index, "climate", e.target.value)}
+        placeholder="Climate"
+        className={inputClass}
+      />
+      <input
+        value={location.governmentType}
+        onChange={(e) => updateLocation(index, "governmentType", e.target.value)}
+        placeholder="Government Type"
+        className={inputClass}
+      />
+      <select
+        value={location.status}
+        onChange={(e) => updateLocation(index, "status", e.target.value)}
+        className={inputClass}
+      >
+        <option value="UNKNOWN">Unknown</option>
+        <option value="SAFE">Safe</option>
+        <option value="DANGEROUS">Dangerous</option>
+        <option value="DESTROYED">Destroyed</option>
+        <option value="OCCUPIED">Occupied</option>
+      </select>
+      <textarea
+        value={location.importance ?? ""}
+        onChange={(e) => updateLocation(index, "importance", e.target.value)}
+        placeholder="Importance"
+        className={inputClass}
+      />
+      <textarea
+        value={location.secrets ?? ""}
+        onChange={(e) => updateLocation(index, "secrets", e.target.value)}
+        placeholder="Secrets (DM Only)"
+        className={inputClass}
+      />
+      <textarea
+        value={location.rumors ?? ""}
+        onChange={(e) => updateLocation(index, "rumors", e.target.value)}
+        placeholder="Rumors"
         className={inputClass}
       />
     </div>
