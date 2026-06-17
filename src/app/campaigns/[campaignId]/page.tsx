@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Campaign from "../_actions/get-campaign-action";
+import { StoryBeatGraph } from "@/app/components/StoryBeatGraph";
 
 type CampaignPageProps = {
   params: Promise<{
@@ -70,6 +71,29 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
             </div>
           ))}
         </div>
+      </section>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-accent tracking-wide">
+          Story Beats
+        </h2>
+        <div className="grid gap-3">
+          {campaign?.storyBeats.map((beat) => (
+            <div
+              key={beat.id}
+              className="bg-card border border-accent/20 rounded-lg p-4 hover:border-accent/50 transition-colors"
+            >
+              <h3 className="font-bold text-foreground mb-1">{beat.title}</h3>
+              <p className="text-foreground/70 text-sm">{beat.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-accent tracking-wide">
+          Story Beat Graph
+        </h2>
+        <StoryBeatGraph campaignId={campaignId} />
       </section>
     </main>
   );
