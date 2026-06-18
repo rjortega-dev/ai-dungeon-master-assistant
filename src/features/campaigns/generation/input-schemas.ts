@@ -60,6 +60,23 @@ export const CampaignPromptInputSchema = z.object({
     storyBeats: z
         .array(StoryBeatSchema).default([])
         ,
+
+    edition: z.string().default(""),
+
+    isHomebrew: z.boolean().default(false),
+
+    startingLevel: z.number().int().optional(),
+    endingLevel: z.number().int().optional(),
+
+    genre: z.string().default(""),
+    tone: z.string().default(""),
+
+    primaryThemes: z.string().default(""),
+
+    inspiration: z.string().default(""),
+
+    centralConflict: z.string().default(""),
+    ultimateGoal: z.string().default(""),
 });
 
 export type PlayerCharacter = z.infer<

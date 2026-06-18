@@ -50,16 +50,115 @@ export default function CampaignForm() {
     }
   }
 
+  const inputClass =
+  "bg-background border border-accent/30 text-foreground placeholder:text-muted px-3 py-2 rounded-lg w-full focus:outline-none focus:border-accent transition-colors";
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      <h2 className="text-xl font-semibold text-accent-text">Campaign Information</h2>
       <input
         value={campaignData.campaignName}
         onChange={(e) =>
           setCampaignData({ ...campaignData, campaignName: e.target.value })
         }
         placeholder="Campaign Name"
-        className="bg-background border border-accent/30 text-foreground placeholder:text-muted px-3 py-2 rounded-lg w-full focus:outline-none focus:border-accent transition-colors"
+        className={inputClass}      />
+
+      <div className="space-y-4">
+        <input 
+          value={campaignData.edition ?? ""} 
+          onChange={(e) => setCampaignData({...campaignData, edition: e.target.value,})}
+          placeholder="Edition (e.g. 5e, Pathfinder 2e)"
+          className={inputClass}
+        />
+
+      <label className="flex items-center gap-2 text-lg font-semibold text-accent-text">
+        <input
+          type="checkbox"
+          checked={campaignData.isHomebrew ?? false}
+          onChange={(e) => setCampaignData({...campaignData, isHomebrew: e.target.checked,})}
+        />
+        Homebrew Campaign
+      </label>
+
+        <select
+          value={campaignData.genre ?? ""}
+          onChange={(e) => setCampaignData({...campaignData, genre: e.target.value,})}
+          className={inputClass}
+        >
+          <option value="">Select Genre</option>
+          <option value="FANTASY">Fantasy</option>
+          <option value="HORROR">Horror</option>
+          <option value="SCI_FI">Sci-Fi</option>
+          <option value="MYSTERY">Mystery</option>
+          <option value="POLITICAL">Political</option>
+          <option value="SURVIVAL">Survival</option>
+          <option value="EXPLORATION">Exploration</option>
+          <option value="OTHER">Other</option>
+        </select>
+
+        <select
+          value={campaignData.tone ?? ""}
+          onChange={(e) => setCampaignData({...campaignData, tone: e.target.value,})}
+          className={inputClass}
+        >
+          <option value="">Select Tone</option>
+          <option value="SERIOUS">Serious</option>
+          <option value="DARK">Dark</option>
+          <option value="COMEDIC">Comedic</option>
+          <option value="HEROIC">Heroic</option>
+          <option value="GRIMDARK">Grimdark</option>
+          <option value="INTRIGUE">Intrigue</option>
+          <option value="OTHER">Other</option>
+        </select>
+
+      <div className="flex gap-2">
+        <input
+          type="number"
+          value={campaignData.startingLevel ?? ""}
+          onChange={(e) => setCampaignData({...campaignData, startingLevel: Number(e.target.value),})}
+          placeholder="Starting Level"
+          className={inputClass}
+        />
+
+        <input
+          type="number"
+          value={campaignData.endingLevel ?? ""}
+          onChange={(e) => setCampaignData({...campaignData, endingLevel: Number(e.target.value),})}
+          placeholder="Ending Level"
+          className={inputClass}
+        />
+      </div>
+
+      <textarea
+        value={campaignData.primaryThemes ?? ""}
+        onChange={(e) => setCampaignData({...campaignData, primaryThemes: e.target.value,
+        })}
+        placeholder="Primary Themes (coma-separated)"
+        className={inputClass}
       />
+
+      <textarea
+        value={campaignData.inspiration ?? ""}
+        onChange={(e) => setCampaignData({...campaignData, inspiration: e.target.value,})}
+        placeholder="Campaign inspiration (one sentence)"
+        className={inputClass}
+      />
+
+      <textarea
+        value={campaignData.centralConflict ?? ""}
+        onChange={(e) => setCampaignData({...campaignData, centralConflict: e.target.value,})}
+        placeholder="Central conflict"
+        className={inputClass}
+      />
+
+      <textarea
+        value={campaignData.ultimateGoal ?? ""}
+        onChange={(e) => setCampaignData({...campaignData, ultimateGoal: e.target.value,})}
+        placeholder="Ultimate goal"
+        className={inputClass}
+      />
+    </div>
 
       <PlayerSection
         players={campaignData.players}
