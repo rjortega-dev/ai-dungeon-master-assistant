@@ -54,6 +54,14 @@ enum GenerationType {
   LOCATION
 }
 
+enum LocationStatus {
+  SAFE
+  DANGEROUS
+  DESTROYED
+  OCCUPIED
+  UNKNOWN
+}
+
 // ======================================================
 // USERS
 // ======================================================
@@ -187,6 +195,11 @@ model Location {
 
   climate        String?
   governmentType String?
+
+  status         LocationStatus @default(UNKNOWN)
+  importance     String?
+  secrets        String?
+  rumors         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
