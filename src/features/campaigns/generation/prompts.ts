@@ -4,7 +4,16 @@ export function campaignPrompt(input: CampaignPromptInput){
     const locations = input.worldSetting.locations?.map(
         (location) => `
         Name: ${location.name}
+        LocationType: ${location.locationType}
         Description: ${location.description}
+
+        Climate: ${location.climate}
+        GovernmentType: ${location.governmentType}
+
+        Status: ${location.status} (consider how status affects what scenes make sense here — e.g. a destroyed location shouldn't host a peaceful tavern scene)
+        ${location.importance ? `Importance: ${location.importance}` : ""}
+        ${location.secrets ? `Secrets (DM Only — weave into hidden transitions, not visible to players): ${location.secrets}` : ""}
+        ${location.rumors ? `Rumors: ${location.rumors}` : ""}
     `)
 .join("\n") ?? "";
     

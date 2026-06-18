@@ -23,7 +23,16 @@ export const PlayerCharacterSchema = z.object({
 
 export const LocationSchema = z.object({
   name: z.string(),
-  description: z.string(),
+  locationType: z.string().optional(),
+  description: z.string().optional(),
+
+  climate: z.string().optional(),
+  governmentType: z.string().optional(),
+
+  status: z.enum(["SAFE", "DANGEROUS", "DESTROYED", "OCCUPIED", "UNKNOWN"]).default("UNKNOWN"),
+  importance: z.string().optional(),
+  secrets: z.string().optional(),
+  rumors: z.string().optional(),
 });
 
 export const WorldSettingSchema = z.object({
