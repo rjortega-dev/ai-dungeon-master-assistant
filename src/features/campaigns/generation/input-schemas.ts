@@ -9,15 +9,13 @@ export const PlayerCharacterSchema = z.object({
   notes: z.string(),
 });
 
-// TODO: locationType, climate, governmentType optional or required?
-// TODO: add these three to form also?
 export const LocationSchema = z.object({
   name: z.string(),
-  locationType: z.string(),
-  description: z.string(),
+  locationType: z.string().optional(),
+  description: z.string().optional(),
 
-  climate: z.string(),
-  governmentType: z.string(),
+  climate: z.string().optional(),
+  governmentType: z.string().optional(),
 
   status: z.enum(["SAFE", "DANGEROUS", "DESTROYED", "OCCUPIED", "UNKNOWN"]).default("UNKNOWN"),
   importance: z.string().optional(),
