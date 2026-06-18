@@ -17,13 +17,28 @@ export function campaignPrompt(input: CampaignPromptInput){
         `
     ).join("\n") ?? "";
 
+    // NOTE: PlayerName only included for player characters, not NPCs now
     const players = input.players?.map(
         (player) => `
-        PlayerName: ${player.playerName}
+        ${player.isNpc ? "[NPC - DM ONLY CONTEXT]" : "[PLAYER CHARACTER]"}
+
+        ${!player.isNpc ? `PlayerName: ${player.playerName}` : ""}
+
         CharacterName: ${player.characterName}
         Class: ${player.characterClass}
         Level: ${player.characterLevel}
         Race: ${player.characterRace}
+
+        ${player.age ? `Age: ${player.age}` : ""}
+        ${player.gender ? `Gender: ${player.gender}` : ""}
+        ${player.appearance ? `Appearance: ${player.appearance}` : ""}
+        ${player.alignment ? `Alignment: ${player.alignment}` : ""}
+        ${player.backstory ? `Backstory: ${player.backstory}` : ""}
+        ${player.motivation ? `Motivation: ${player.motivation}` : ""}
+        ${player.goals ? `Goals: ${player.goals}` : ""}
+        ${player.fears ? `Fears: ${player.fears}` : ""}
+        ${player.secrets ? `Secrets (DM Only): ${player.secrets}` : ""}
+        
         Notes: ${player.notes}
         `).join("\n") ?? "";
 

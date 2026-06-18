@@ -150,6 +150,16 @@ model Character {
 
   isNpc Boolean @default(false)
 
+  age           String?
+  gender        String?
+  appearance    String?
+  alignment     String?
+  backstory     String?
+  motivation    String?
+  goals         String?
+  secrets       String?
+  fears         String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

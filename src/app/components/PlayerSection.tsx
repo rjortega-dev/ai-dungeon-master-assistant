@@ -22,6 +22,7 @@ export default function PlayerSection({
         characterLevel: 0,
         characterRace: "",
         notes: "",
+        isNpc: false
       },
     ]);
   }
@@ -29,7 +30,7 @@ export default function PlayerSection({
   function updatePlayer(
     index: number,
     field: keyof Player,
-    value: string | number | null,
+    value: string | number | null | boolean
   ) {
     const updatedPlayers = [...players];
     updatedPlayers[index] = { ...updatedPlayers[index], [field]: value };

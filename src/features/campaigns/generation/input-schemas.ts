@@ -7,6 +7,18 @@ export const PlayerCharacterSchema = z.object({
   characterRace: z.string(),
   characterLevel: z.number().int().positive().default(0),
   notes: z.string(),
+
+  age: z.string().optional(),             //string not int (players often say "mid-30s")
+  gender: z.string().optional(),
+  appearance: z.string().optional(),
+  alignment: z.string().optional(),       //e.g. "Chaotic Good"
+  backstory: z.string().optional(),
+  motivation: z.string().optional(),
+  goals: z.string().optional(),
+  secrets: z.string().optional(),
+  fears: z.string().optional(),
+  
+  isNpc: z.boolean().default(false)
 });
 
 export const LocationSchema = z.object({
