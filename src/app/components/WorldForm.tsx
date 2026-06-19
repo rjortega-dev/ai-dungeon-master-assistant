@@ -24,6 +24,10 @@ export default function WorldForm({ world, setWorld }: WorldFormProps) {
           climate: "",
           governmentType: "",
           status: "UNKNOWN",
+
+          importance: "",
+          secrets: "",
+          rumors: "",
         }
       ],
     });
