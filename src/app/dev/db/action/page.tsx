@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { sql } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
