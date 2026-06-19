@@ -8,31 +8,31 @@ export const PlayerCharacterSchema = z.object({
   characterLevel: z.number().int().positive().default(0),
   notes: z.string(),
 
-  age: z.string().optional(),             //string not int (players often say "mid-30s")
-  gender: z.string().optional(),
-  appearance: z.string().optional(),
-  alignment: z.string().optional(),       //e.g. "Chaotic Good"
-  backstory: z.string().optional(),
-  motivation: z.string().optional(),
-  goals: z.string().optional(),
-  secrets: z.string().optional(),
-  fears: z.string().optional(),
+  age: z.string().default(""),             //string not int (players often say "mid-30s")
+  gender: z.string().default(""),
+  appearance: z.string().default(""),
+  alignment: z.string().default(""),       //e.g. "Chaotic Good"
+  backstory: z.string().default(""),
+  motivation: z.string().default(""),
+  goals: z.string().default(""),
+  secrets: z.string().default(""),
+  fears: z.string().default(""),
   
   isNpc: z.boolean().default(false)
 });
 
 export const LocationSchema = z.object({
   name: z.string(),
-  locationType: z.string().optional(),
-  description: z.string().optional(),
+  locationType: z.string().default(""),
+  description: z.string().default(""),
 
-  climate: z.string().optional(),
-  governmentType: z.string().optional(),
+  climate: z.string().default(""),
+  governmentType: z.string().default(""),
 
   status: z.enum(["SAFE", "DANGEROUS", "DESTROYED", "OCCUPIED", "UNKNOWN"]).default("UNKNOWN"),
-  importance: z.string().optional(),
-  secrets: z.string().optional(),
-  rumors: z.string().optional(),
+  importance: z.string().default(""),
+  secrets: z.string().default(""),
+  rumors: z.string().default(""),
 });
 
 export const WorldSettingSchema = z.object({
@@ -86,8 +86,8 @@ export const CampaignPromptInputSchema = z.object({
 
     isHomebrew: z.boolean().default(false),
 
-    startingLevel: z.number().int().optional(),
-    endingLevel: z.number().int().optional(),
+    startingLevel: z.number().int().nullable().default(null),
+    endingLevel: z.number().int().nullable().default(null),
 
     genre: z.string().default(""),
     tone: z.string().default(""),
