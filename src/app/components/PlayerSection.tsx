@@ -22,7 +22,17 @@ export default function PlayerSection({
         characterLevel: 0,
         characterRace: "",
         notes: "",
-        isNpc: false
+
+        age: "",
+        gender: "",
+        appearance: "",
+        alignment: "",
+        backstory: "",
+        motivation: "",
+        goals: "",
+        secrets: "",
+        fears: "",
+        isNpc: false,
       },
     ]);
   }
