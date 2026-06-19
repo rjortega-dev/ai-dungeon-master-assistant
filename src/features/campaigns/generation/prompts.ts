@@ -58,11 +58,14 @@ export function campaignPrompt(input: CampaignPromptInput){
     === CORE CAMPAIGN INFO ===
     CampaignName: ${input.campaignName}
     WorldSetting: ${input.worldSetting.name}
+    Edition: ${input.edition ?? "unspecified"}
     SettingStyle: ${input.worldSetting.settingStyle}
+    Homebrew Setting: ${input.isHomebrew ? "Yes" : "No"}
 
     === NARRATIVE DIRECTION (CRITICAL) ===
     Genre: ${input.genre ?? "unspecified"}
     Tone: ${input.tone ?? "unspecified"}
+    Primary Themes: ${input.primaryThemes ?? "none provided"}
     Inspiration: ${input.inspiration ?? "none provided"}
     Central Conflict: ${input.centralConflict ?? "none provided"}
     Ultimate Goal: ${input.ultimateGoal ?? "none provided"}

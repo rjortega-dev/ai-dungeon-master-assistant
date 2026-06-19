@@ -11,6 +11,9 @@ export async function generateCampaign(
     const prompt = campaignPrompt(promptInput)
     const instructions = campaignInstructions
 
+    console.log("CAMPAIGN PROMPT")
+    console.log(prompt)
+
     const response = await generateStructuredOutput({
         formatSchema: GeneratedCampaignSchema,
         instructions: instructions,
