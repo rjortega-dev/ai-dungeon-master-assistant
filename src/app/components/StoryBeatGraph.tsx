@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -12,6 +12,7 @@ import dagre from "@dagrejs/dagre";
 import { StoryBeatNode, type StoryBeatNodeData } from "./StoryBeatNode";
 import { useColorMode } from "@/app/hooks/useColorMode";
 import type { CampaignBeatsResponse, BeatForGraph } from "@/app/types/graph";
+import { StoryBeatActionPanel } from "./StoryBeatActionPanel";
 
 const nodeTypes = {
   storyBeat: StoryBeatNode,
@@ -20,17 +21,21 @@ const nodeTypes = {
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
 
-function buildNodes(beats: BeatForGraph[]): Node<StoryBeatNodeData>[] {
+function buildNodes(
+  beats: BeatForGraph[],
+  errorBeatIds: Set<string>,
+  selectedBeatId: string | null,
+): Node<StoryBeatNodeData>[] {
   return beats.map((beat) => ({
     id: beat.id,
     type: "storyBeat",
-    // Position is overwritten by the dagre layout pass below.
-    // We still need a placeholder so React Flow has something to render initially.
     position: { x: 0, y: 0 },
     data: {
       title: beat.title,
       beatType: beat.beatType,
       state: beat.state,
+      hasError: errorBeatIds.has(beat.id),
+      isSelected: beat.id === selectedBeatId,
     },
   }));
 }
@@ -197,6 +202,9 @@ type StoryBeatGraphProps = {
 function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
   const [beats, setBeats] = useState<BeatForGraph[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBeatId, setSelectedBeatId] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [errorBeatIds, setErrorBeatIds] = useState<Set<string>>(new Set());
   const colorMode = useColorMode();
 
   useEffect(() => {
@@ -229,15 +237,103 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
     };
   }, [campaignId]);
 
+  const handleSelect = useCallback((beatId: string) => {
+    setSelectedBeatId((current) =>
+      current === beatId ? null : beatId
+    );
+  }, []);
+
+  const handleToggleComplete = useCallback(
+    async (beatId: string) => {
+      const previousBeats = beats;
+      if (!previousBeats) return;
+
+      const targetBeat = previousBeats.find(
+        (beat) => beat.id === beatId
+      );
+
+      if (!targetBeat) return;
+
+      const isCurrentlyComplete =
+        targetBeat.completedAt !== null;
+
+      const optimisticBeats = previousBeats.map((beat) =>
+        beat.id === beatId
+          ? {
+              ...beat,
+              completedAt: isCurrentlyComplete
+                ? null
+                : new Date().toISOString(),
+            }
+          : beat
+      );
+
+      setBeats(optimisticBeats);
+      setIsUpdating(true);
+
+      setErrorBeatIds((prev) => {
+        const next = new Set(prev);
+        next.delete(beatId);
+        return next;
+      });
+
+      try {
+        const response = await fetch(
+          `/api/beats/${beatId}/complete`,
+          {
+            method: "PATCH",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to update beat");
+        }
+
+        const refreshed = await fetch(
+          `/api/campaigns/${campaignId}/beats`
+        );
+
+        if (!refreshed.ok) {
+          throw new Error("Failed to refresh graph");
+        }
+
+        const data: CampaignBeatsResponse =
+          await refreshed.json();
+
+        setBeats(data.beats);
+      } catch {
+        setBeats(previousBeats);
+
+        setErrorBeatIds(
+          (prev) => new Set(prev).add(beatId)
+        );
+      } finally {
+        setIsUpdating(false);
+      }
+    },
+    [beats, campaignId]
+  );
+
+  const selectedBeat = useMemo(() => {
+    if (!beats || !selectedBeatId) {
+      return null;
+    }
+
+    return (
+      beats.find((beat) => beat.id === selectedBeatId) ??
+      null
+    );
+  }, [beats, selectedBeatId]);
+
   const { nodes, edges } = useMemo(() => {
     if (!beats) return { nodes: [], edges: [] };
 
-    const rawNodes = buildNodes(beats);
+    const rawNodes = buildNodes(beats, errorBeatIds, selectedBeatId);
     const builtEdges = buildEdges(beats);
     const layoutedNodes = applyDagreLayout(rawNodes, builtEdges, beats);
 
     return { nodes: layoutedNodes, edges: builtEdges };
-  }, [beats]);
+  }, [beats, errorBeatIds, selectedBeatId]);
 
   if (error) {
     return <p className="text-red-400 text-sm">{error}</p>;
@@ -248,23 +344,37 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
   }
 
   return (
-    <div
-      style={{ height: 600, backgroundColor: "var(--card-bg)" }}
-      className="rounded-xl border border-accent/20"
-    >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        fitView
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        colorMode={colorMode}
+    <>
+    {selectedBeat && (
+        <div className="mt-3">
+          <StoryBeatActionPanel
+            beat={selectedBeat}
+            onToggleComplete={handleToggleComplete}
+            onClose={() => setSelectedBeatId(null)}
+            isUpdating={isUpdating}
+          />
+        </div>
+      )}
+      <div
+        style={{ height: 600, backgroundColor: "var(--card-bg)" }}
+        className="rounded-xl border border-accent/20"
       >
-        <Controls showInteractive={false} />
-      </ReactFlow>
-    </div>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          fitView
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          colorMode={colorMode}
+          onNodeClick={(_event, node) => handleSelect(node.id)}
+        >
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </div>
+      
+    </>
   );
 }
 
