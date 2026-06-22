@@ -13,6 +13,7 @@ import { StoryBeatNode, type StoryBeatNodeData } from "./StoryBeatNode";
 import { useColorMode } from "@/app/hooks/useColorMode";
 import type { CampaignBeatsResponse, BeatForGraph } from "@/app/types/graph";
 import { StoryBeatActionPanel } from "./StoryBeatActionPanel";
+import { flushSync } from "react-dom";
 
 const nodeTypes = {
   storyBeat: StoryBeatNode,
@@ -20,6 +21,21 @@ const nodeTypes = {
 
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
+
+function computeStateClient(
+  beat: BeatForGraph,
+  allBeats: BeatForGraph[]
+): BeatForGraph["state"] {
+  if (beat.completedAt !== null) return "completed";
+  if (beat.incomingTransitions.length === 0) return "current";
+
+  const anyIncomingCompleted = beat.incomingTransitions.some((t) => {
+    const fromBeat = allBeats.find((b) => b.id === t.fromBeatId);
+    return fromBeat?.completedAt !== null;
+  });
+
+  return anyIncomingCompleted ? "current" : "default";
+}
 
 function buildNodes(
   beats: BeatForGraph[],
@@ -267,14 +283,19 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
             }
           : beat
       );
+      const optimisticBeatsWithState = optimisticBeats.map((beat) => ({
+        ...beat,
+        state: computeStateClient(beat, optimisticBeats),
+      }));
 
-      setBeats(optimisticBeats);
-      setIsUpdating(true);
-
-      setErrorBeatIds((prev) => {
-        const next = new Set(prev);
-        next.delete(beatId);
-        return next;
+      flushSync(() => {
+        setBeats(optimisticBeatsWithState);
+        setIsUpdating(true);
+        setErrorBeatIds((prev) => {
+          const next = new Set(prev);
+          next.delete(beatId);
+          return next;
+        });
       });
 
       try {
