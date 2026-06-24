@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PlayerCharacterSchema } from "./input-schemas";
+
 // enums
 export const CampaignStatusSchema = z.enum([
   "DRAFT",
@@ -36,6 +37,12 @@ export const GameSystems = z.enum([
   "SAVAGEWORLDS",
   "GURPS",
 ]);
+
+export const GenericGenerationContext = z.object({
+  notes: z.string().optional().nullable(),
+  context: z.array(z.any()).optional().nullable()
+});
+
 // campaign entities
 export const LocationSchema = z.object({
   name: z.string().min(1),
@@ -103,6 +110,13 @@ export const GeneratedCampaignSchema = z.object({
     ),
 });
 
+export const SideStorySchema = z.object({
+  storyBeats: z
+    .array(StoryBeatSchema)
+    .min(3).max(3),
+  transitions: z.array(BeatTransitionSchema)
+})
+
 export const CampaignMetaSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
@@ -112,9 +126,11 @@ export const CampaignMetaSchema = z.object({
 
 export const GeneratedTransitionsSchema = z.array(BeatTransitionSchema)
 
+export type SideStory = z.infer<typeof SideStorySchema>;
+export type GenerationContext = z.infer<typeof GenericGenerationContext>;
 export type CampaignTransitions = z.infer<typeof GeneratedTransitionsSchema>;
 export type CampaignMeta = z.infer<typeof CampaignMetaSchema>;
-export type GeneratedCharacter = z.infer<typeof GeneratedCampaignSchema>;
+export type GeneratedCharacter = z.infer<typeof GeneratedCharacterSchema>;
 export type GeneratedLocation = z.infer<typeof LocationSchema>;
 export type StoryBeat = z.infer<typeof StoryBeatSchema>;
 export type BeatTransitionInput = z.infer<typeof BeatTransitionSchema>;
