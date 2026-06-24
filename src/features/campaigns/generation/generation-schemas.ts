@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { PlayerCharacterSchema } from "./input-schemas";
-
+// enums
 export const CampaignStatusSchema = z.enum([
   "DRAFT",
   "ACTIVE",
@@ -28,6 +28,15 @@ export const TransitionTypeSchema = z.enum([
   "COMBAT_LOSS",
 ]);
 
+export const GameSystems = z.enum([
+  "DD5E",
+  "PATHFINDER2E",
+  "PBTA",
+  "FATECORE",
+  "SAVAGEWORLDS",
+  "GURPS",
+]);
+// campaign entities
 export const LocationSchema = z.object({
   name: z.string().min(1),
 
@@ -41,7 +50,16 @@ export const LocationSchema = z.object({
   
 });
 
+export const GeneratedCharacterSchema = z.object({
+  name: z.string().min(1),
+  race: z.string().min(1),
+  class: z.string().min(1),
+  background: z.string().min(1),
+  description: z.string().min(1),
+  isNpc: z.boolean(),
+})
 
+// Beats
 export const StoryBeatSchema = z.object({
     title: z.string().min(1),
     description: z.string().optional().nullable(),
@@ -52,6 +70,7 @@ export const StoryBeatSchema = z.object({
     
     sequenceOrder: z.number().int().nonnegative(),
 });
+
 export const BeatTransitionSchema = z.object({
     fromSequence: z.number().int().nonnegative(),
     toSequence: z.number().int().nonnegative(),
@@ -62,6 +81,8 @@ export const BeatTransitionSchema = z.object({
     
     isHidden: z.boolean().default(false),
 });
+
+// campaign meta
 
 export const GeneratedCampaignSchema = z.object({
     title: z.string().min(1),
@@ -83,8 +104,19 @@ export const GeneratedCampaignSchema = z.object({
     ),
 });
 
+export const CampaignMetaSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  gameSystem: GameSystems,
+  settingSummary: z.string().min(1),
+})
 
-export type LocationInput = z.infer<typeof LocationSchema>;
-export type StoryBeatInput = z.infer<typeof StoryBeatSchema>;
+export const GeneratedTransitionsSchema = z.array(BeatTransitionSchema)
+
+export type CampaignTransitions = z.infer<typeof GeneratedTransitionsSchema>;
+export type CampaignMeta = z.infer<typeof CampaignMetaSchema>;
+export type GeneratedCharacter = z.infer<typeof GeneratedCampaignSchema>;
+export type GeneratedLocation = z.infer<typeof LocationSchema>;
+export type StoryBeat = z.infer<typeof StoryBeatSchema>;
 export type BeatTransitionInput = z.infer<typeof BeatTransitionSchema>;
 export type GeneratedCampaign = z.infer<typeof GeneratedCampaignSchema>;
