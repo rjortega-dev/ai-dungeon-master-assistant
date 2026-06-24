@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Campaign from "../_actions/get-campaign-action";
+import { StoryBeatGraph } from "@/app/components/StoryBeatGraph";
 
 type CampaignPageProps = {
   params: Promise<{
@@ -70,6 +71,12 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
             </div>
           ))}
         </div>
+      </section>
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-accent tracking-wide">
+          Story Beat Graph
+        </h2>
+        <StoryBeatGraph campaignId={campaignId} />
       </section>
     </main>
   );
