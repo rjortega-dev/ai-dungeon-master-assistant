@@ -10,5 +10,5 @@ export default async function generateEntity<EntityTypeSchema extends z.ZodObjec
                 instructions: instructions,
                 prompt: prompt,
             });
-            return entitySchema.parse(res)
+            return res
     } 

@@ -1,5 +1,5 @@
 import generateStructuredOutput from "@/lib/openai/generate-structured-output";
-import { campaignInstructions, campaignPrompt } from "./prompts";
+import { CAMPAIGN_INSTRUCTIONS, campaignPrompt } from "./prompts";
 import { GeneratedCampaign, GeneratedCampaignSchema } from "./generation-schemas";
 import { CampaignPromptInput } from "./input-schemas";
 
@@ -9,7 +9,7 @@ export async function generateCampaign(
 ) : Promise<GeneratedCampaign>{
 
     const prompt = campaignPrompt(promptInput)
-    const instructions = campaignInstructions
+    const instructions = CAMPAIGN_INSTRUCTIONS
 
     const response = await generateStructuredOutput({
         formatSchema: GeneratedCampaignSchema,

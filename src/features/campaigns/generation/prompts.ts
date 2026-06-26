@@ -45,7 +45,7 @@ export function campaignPrompt(input: CampaignPromptInput){
     `
 }
 
-export const campaignInstructions = `
+export const CAMPAIGN_INSTRUCTIONS = `
 You are an expert tabletop RPG campaign designer.
 Requirements:
 
@@ -64,12 +64,12 @@ Requirements:
 Generate valid JSON matching the provided schema.
 `
 
-export const characterInstructions = `You are an expert tabletop rpg character creator
+export const CHARACTER_INSTRUCTIONS = `You are an expert tabletop rpg character creator
 Use the notes provided and the context and campaign entities provided to generate a new character for the campaign.
 Only generate data for the matching schema provided. To assist with the dungeon master's story telling include brief descriptions of a character's personality, motivations, and close relations.
 `
 
-export const locationInstructions = `You are an expert tabletop rpg location creator
+export const LOCATION_INSTRUCTIONS = `You are an expert tabletop rpg location creator
 Use the notes provided and the context and campaign entities provided to generate a new location for the campaign.
 Only generate data for the matching schema provided. 
 
@@ -77,7 +77,7 @@ Only generate data for the matching schema provided.
 - locations should include descriptions of their physical location relative to existing locations
 `
 
-export const sideStoryInstructions = `You are an expert tabletop rpg campaign creator. We want to generate a new side story composed of 3 beats that can fit into the existing campaign.
+export const SIDESTORY_INSTRUCTIONS = `You are an expert tabletop rpg campaign creator. We want to generate a new side story composed of 3 beats that can fit into the existing campaign.
 These beat(s) should act as side quest fillers to give the campaign more depth and color. They should not affect or block the main quest's progression. The first beat transitions from a main story beat. 
 The last beat in the new sequence transitions back to the same main story beat the side story transitioned from
 A side story can transition from a main story sequence. Side stories can transition to other side story beats. Side stories can not transition to a new main story beat.
