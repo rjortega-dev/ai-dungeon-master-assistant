@@ -277,6 +277,8 @@ model StoryBeat {
 
   sequenceOrder Int?
 
+  completedAt DateTime?
+  
   metadata Json?
 
   createdAt DateTime @default(now())
