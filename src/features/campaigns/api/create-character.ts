@@ -12,11 +12,19 @@ type CreateCharacterInput = {
   description?: string;
 
   isNpc?: boolean;
+
+  age?: string | null;
+  gender?: string | null;
+  appearance?: string | null;
+  alignment?: string | null;
+  backstory?: string | null;
+  motivation?: string | null;
+  goals?: string | null;
+  secrets?: string | null;
+  fears?: string | null;
 };
 
-export async function createCharacter(
-  data: CreateCharacterInput
-) {
+export async function createCharacter(data: CreateCharacterInput) {
   return prisma.character.create({
     data,
   });
