@@ -54,6 +54,14 @@ enum GenerationType {
   LOCATION
 }
 
+enum LocationStatus {
+  SAFE
+  DANGEROUS
+  DESTROYED
+  OCCUPIED
+  UNKNOWN
+}
+
 // ======================================================
 // USERS
 // ======================================================
@@ -87,6 +95,22 @@ model Campaign {
   description    String?
   gameSystem     String?
   settingSummary String?
+
+  edition String?
+
+  isHomebrew Boolean @default(false)
+
+  startingLevel Int?
+  endingLevel Int?
+
+  genre String?
+  tone String?
+
+  primaryThemes String?
+  inspiration String?
+
+  centralConflict String?
+  ultimateGoal String?
 
   status CampaignStatus @default(DRAFT)
 
@@ -133,6 +157,16 @@ model Character {
   description String?
 
   isNpc Boolean @default(false)
+
+  age           String?
+  gender        String?
+  appearance    String?
+  alignment     String?
+  backstory     String?
+  motivation    String?
+  goals         String?
+  secrets       String?
+  fears         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -187,6 +221,11 @@ model Location {
 
   climate        String?
   governmentType String?
+
+  status         LocationStatus @default(UNKNOWN)
+  importance     String?
+  secrets        String?
+  rumors         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

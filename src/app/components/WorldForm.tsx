@@ -1,6 +1,7 @@
 import Button from "./Button";
 import LocationForm from "./LocationForm";
 import { WorldSetting } from "@/features/campaigns/generation/input-schemas";
+import { Location } from "../types/location";
 
 type WorldFormProps = {
   world: WorldSetting;
@@ -14,13 +15,27 @@ export default function WorldForm({ world, setWorld }: WorldFormProps) {
   function addLocation() {
     setWorld({
       ...world,
-      locations: [...world.locations, { name: "", description: "" }],
+      locations: [
+        ...world.locations, 
+        { 
+          name: "",
+          locationType: "",
+          description: "",
+          climate: "",
+          governmentType: "",
+          status: "UNKNOWN",
+
+          importance: "",
+          secrets: "",
+          rumors: "",
+        }
+      ],
     });
   }
 
   function updateLocation(
     index: number,
-    field: "name" | "description",
+    field: keyof Location,
     value: string,
   ) {
     const updatedLocations = [...world.locations];

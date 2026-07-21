@@ -11,6 +11,16 @@ export type CreateCampaignInput = {
   gameSystem?: string;
   settingSummary?: string;
   status?: CampaignStatus;
+  edition?: string;
+  isHomebrew?: boolean;
+  startingLevel?: number;
+  endingLevel?: number;
+  genre?: string;
+  tone?: string;
+  primaryThemes?: string;
+  inspiration?: string;
+  centralConflict?: string;
+  ultimateGoal?: string;
 };
 
 export async function createCampaign(
