@@ -95,7 +95,14 @@ export async function POST(request: NextRequest) {
     const newLocation = await createLocation({
       creatorUserId: tempUser.id,
       name: location.name,
-      description: location.description,
+      locationType: location.locationType || null,
+      description: location.description || null,
+      climate: location.climate || null,
+      governmentType: location.governmentType || null,
+      status: location.status,
+      importance: location.importance || null,
+      secrets: location.secrets || null,
+      rumors: location.rumors || null,
     });
 
     // link location to campaign
