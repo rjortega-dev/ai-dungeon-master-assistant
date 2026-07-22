@@ -17,16 +17,20 @@ async function main() {
   // USERS
   // ======================================================
 
-  const dmUser = await prisma.user.create({
-    data: {
+  const dmUser = await prisma.user.upsert({
+    where: { email: "dm@merlin.dev" },
+    update: {},
+    create: {
       email: "dm@merlin.dev",
       username: "DungeonMaster",
       passwordHash: "hashed-password-placeholder",
     },
   });
 
-  const playerUser = await prisma.user.create({
-    data: {
+  const playerUser = await prisma.user.upsert({
+    where: { email: "player@merlin.dev" },
+    update: {},
+    create: {
       email: "player@merlin.dev",
       username: "HeroPlayer",
       passwordHash: "hashed-password-placeholder",
