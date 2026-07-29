@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   // grab first user in db as placeholder
   const tempUser = await prisma.user.findFirst();
   if (!tempUser) {
-    return NextResponse.json({ error: "No User Foudnd" }, { status: 500 });
+    return NextResponse.json({ error: "No User Found" }, { status: 500 });
   }
 
   // campaign creation
@@ -36,6 +36,13 @@ export async function POST(request: NextRequest) {
     inspiration: body.inspiration,
     centralConflict: body.centralConflict,
     ultimateGoal: body.ultimateGoal,
+  });
+
+  const activeCampaign = await prisma.activeCampaign.create({
+    data: {
+      campaignID: campaign.id,
+      dmUser: tempUser.id,
+    },
   });
 
   // character creation
@@ -88,14 +95,36 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // create campaign story beats
+  const beatsBySequence = new Map<number, string>();
+
   for (const beat of body.storyBeats ?? []) {
-    await createStoryBeat({
+    const created = await createStoryBeat({
       campaignId: campaign.id,
       title: beat.title,
       description: beat.description,
       beatType: beat.beatType,
       sequenceOrder: beat.sequenceOrder,
+    });
+    beatsBySequence.set(beat.sequenceOrder, created.id);
+  }
+
+  // create beat transitions
+  for (const transition of body.transitions ?? []) {
+    const fromBeatId = beatsBySequence.get(transition.fromSequence);
+    const toBeatId = beatsBySequence.get(transition.toSequence);
+
+    // skip if either beat wasn't found
+    if (!fromBeatId || !toBeatId) continue;
+
+    await prisma.beatTransition.create({
+      data: {
+        campaignId: activeCampaign.id,
+        fromBeatId,
+        toBeatId,
+        transitionType: transition.transitionType,
+        conditionDescription: transition.conditionDescription || null,
+        isHidden: transition.isHidden ?? false,
+      },
     });
   }
 
