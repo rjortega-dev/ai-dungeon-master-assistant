@@ -74,6 +74,7 @@ export const CampaignPromptInputSchema = z.object({
 
   players: z.array(PlayerCharacterSchema).default([]),
   storyBeats: z.array(StoryBeatSchema).default([]),
+  gameSystem: z.string().default(""),
   edition: z.string().default(""),
 
   isHomebrew: z.boolean().default(false),
