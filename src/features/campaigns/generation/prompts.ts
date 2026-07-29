@@ -1,7 +1,9 @@
 import { CampaignPromptInput } from "./input-schemas";
 
-export function campaignPrompt(input: CampaignPromptInput){
-    const locations = input.worldSetting.locations?.map(
+export function campaignPrompt(input: CampaignPromptInput) {
+  const locations =
+    input.worldSetting.locations
+      ?.map(
         (location) => `
         Name: ${location.name}
         LocationType: ${location.locationType}
@@ -14,20 +16,26 @@ export function campaignPrompt(input: CampaignPromptInput){
         ${location.importance ? `Importance: ${location.importance}` : ""}
         ${location.secrets ? `Secrets (DM Only — weave into hidden transitions, not visible to players): ${location.secrets}` : ""}
         ${location.rumors ? `Rumors: ${location.rumors}` : ""}
-    `)
-.join("\n") ?? "";
-    
-    const storyBeats = input.storyBeats?.map(
+    `,
+      )
+      .join("\n") ?? "";
+
+  const storyBeats =
+    input.storyBeats
+      ?.map(
         (beat) => `
         BeatTitle: ${beat.title}
         BeatStoryType: ${beat.storyBeatType}
         BeatTaskType: ${beat.beatTaskType}
         Notes: ${beat.notes}
-        `
-    ).join("\n") ?? "";
+        `,
+      )
+      .join("\n") ?? "";
 
-    // NOTE: PlayerName only included for player characters, not NPCs now
-    const players = input.players?.map(
+  // NOTE: PlayerName only included for player characters, not NPCs now
+  const players =
+    input.players
+      ?.map(
         (player) => `
         ${player.isNpc ? "[NPC - DM ONLY CONTEXT]" : "[PLAYER CHARACTER]"}
 
@@ -49,15 +57,17 @@ export function campaignPrompt(input: CampaignPromptInput){
         ${player.secrets ? `Secrets (DM Only): ${player.secrets}` : ""}
         
         Notes: ${player.notes}
-        `).join("\n") ?? "";
+        `,
+      )
+      .join("\n") ?? "";
 
-
-    return `
+  return `
     YOU ARE DESIGNING A TABLETOP RPG CAMPAIGN.
 
     === CORE CAMPAIGN INFO ===
     CampaignName: ${input.campaignName}
     WorldSetting: ${input.worldSetting.name}
+    GameSystem: ${input.gameSystem ?? "unspecified"}
     Edition: ${input.edition ?? "unspecified"}
     SettingStyle: ${input.worldSetting.settingStyle}
     Homebrew Setting: ${input.isHomebrew ? "Yes" : "No"}
@@ -92,7 +102,7 @@ export function campaignPrompt(input: CampaignPromptInput){
     - Inspiration should shape narrative themes and quest design
 
     Return a fully structured campaign in valid JSON matching the schema.
-    `
+    `;
 }
 
 export const campaignInstructions = `
@@ -112,4 +122,4 @@ Requirements:
 - Ending beats should have no outgoing transitions.
 
 Generate valid JSON matching the provided schema.
-`
+`;
