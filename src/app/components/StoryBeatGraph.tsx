@@ -14,9 +14,15 @@ import { useColorMode } from "@/app/hooks/useColorMode";
 import type { CampaignBeatsResponse, BeatForGraph } from "@/app/types/graph";
 import { StoryBeatActionPanel } from "./StoryBeatActionPanel";
 import { flushSync } from "react-dom";
+import { GraphLegend } from "./GraphLegend";
+import { StoryBeatEdge } from "./StoryBeatEdge";
 
 const nodeTypes = {
   storyBeat: StoryBeatNode,
+};
+
+const edgeTypes = {
+  storyBeatEdge: StoryBeatEdge,
 };
 
 const NODE_WIDTH = 200;
@@ -24,7 +30,7 @@ const NODE_HEIGHT = 70;
 
 function computeStateClient(
   beat: BeatForGraph,
-  allBeats: BeatForGraph[]
+  allBeats: BeatForGraph[],
 ): BeatForGraph["state"] {
   if (beat.completedAt !== null) return "completed";
   if (beat.incomingTransitions.length === 0) return "current";
@@ -56,48 +62,37 @@ function buildNodes(
   }));
 }
 
-function buildEdges(beats: BeatForGraph[]): Edge[] {
-  const beatById = new Map(beats.map((beat) => [beat.id, beat]));
+const TRANSITION_COLORS: Record<string, string> = {
+  SUCCESS: "var(--edge-success)",
+  FAILURE: "var(--edge-failure)",
+  OPTIONAL: "var(--edge-optional)",
+  SECRET: "var(--edge-secret)",
+  COMBAT_WIN: "var(--edge-combat-win)",
+  COMBAT_LOSS: "var(--edge-combat-loss)",
+  ACCEPT: "var(--edge-accept)",
+  REJECT: "var(--edge-reject)",
+};
 
+function buildEdges(beats: BeatForGraph[]): Edge[] {
   return beats.flatMap((beat) =>
     beat.outgoingTransitions.map((transition) => {
-      const sourceBeat = beatById.get(transition.fromBeatId);
-      const targetBeat = beatById.get(transition.toBeatId);
-
-      let style: Edge["style"];
-
-      if (targetBeat?.state === "current") {
-        style = { strokeWidth: 3, stroke: "var(--accent)", opacity: 1 };
-      } else if (targetBeat?.state === "completed") {
-        style = { strokeWidth: 2, stroke: "#4ade80", opacity: 0.9 };
-      } else if (sourceBeat?.state === "current") {
-        style = {
-          strokeDasharray: "4 4",
-          stroke: "var(--accent)",
-          opacity: transition.isHidden ? 0.4 : 0.6,
-        };
-      } else {
-        style = {
-          strokeDasharray: "4 4",
-          opacity: transition.isHidden ? 0.1 : 0.18,
-        };
-      }
+      const color =
+        TRANSITION_COLORS[transition.transitionType] ?? "var(--edge-optional)";
+      const isSecret = transition.isHidden;
+      const isDimmed = beat.state === "default";
 
       return {
         id: transition.id,
         source: transition.fromBeatId,
         target: transition.toBeatId,
-        type: "smoothstep",
-        label: transition.isHidden ? "???" : transition.transitionType,
-        labelStyle: {
-          fill: "var(--foreground)",
-          fontSize: 10,
-          fontWeight: 600,
+        type: "storyBeatEdge",
+        data: {
+          transitionType: transition.transitionType,
+          conditionDescription: transition.conditionDescription,
+          isHidden: transition.isHidden,
+          color,
+          isDimmed,
         },
-        labelBgStyle: { fill: "var(--card-bg)", fillOpacity: 0.9 },
-        labelBgPadding: [4, 2] as [number, number],
-        labelBgBorderRadius: 4,
-        style,
       };
     }),
   );
@@ -254,9 +249,7 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
   }, [campaignId]);
 
   const handleSelect = useCallback((beatId: string) => {
-    setSelectedBeatId((current) =>
-      current === beatId ? null : beatId
-    );
+    setSelectedBeatId((current) => (current === beatId ? null : beatId));
   }, []);
 
   const handleToggleComplete = useCallback(
@@ -264,14 +257,11 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
       const previousBeats = beats;
       if (!previousBeats) return;
 
-      const targetBeat = previousBeats.find(
-        (beat) => beat.id === beatId
-      );
+      const targetBeat = previousBeats.find((beat) => beat.id === beatId);
 
       if (!targetBeat) return;
 
-      const isCurrentlyComplete =
-        targetBeat.completedAt !== null;
+      const isCurrentlyComplete = targetBeat.completedAt !== null;
 
       const optimisticBeats = previousBeats.map((beat) =>
         beat.id === beatId
@@ -281,7 +271,7 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
                 ? null
                 : new Date().toISOString(),
             }
-          : beat
+          : beat,
       );
       const optimisticBeatsWithState = optimisticBeats.map((beat) => ({
         ...beat,
@@ -299,40 +289,32 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
       });
 
       try {
-        const response = await fetch(
-          `/api/beats/${beatId}/complete`,
-          {
-            method: "PATCH",
-          }
-        );
+        const response = await fetch(`/api/beats/${beatId}/complete`, {
+          method: "PATCH",
+        });
 
         if (!response.ok) {
           throw new Error("Failed to update beat");
         }
 
-        const refreshed = await fetch(
-          `/api/campaigns/${campaignId}/beats`
-        );
+        const refreshed = await fetch(`/api/campaigns/${campaignId}/beats`);
 
         if (!refreshed.ok) {
           throw new Error("Failed to refresh graph");
         }
 
-        const data: CampaignBeatsResponse =
-          await refreshed.json();
+        const data: CampaignBeatsResponse = await refreshed.json();
 
         setBeats(data.beats);
       } catch {
         setBeats(previousBeats);
 
-        setErrorBeatIds(
-          (prev) => new Set(prev).add(beatId)
-        );
+        setErrorBeatIds((prev) => new Set(prev).add(beatId));
       } finally {
         setIsUpdating(false);
       }
     },
-    [beats, campaignId]
+    [beats, campaignId],
   );
 
   const selectedBeat = useMemo(() => {
@@ -340,10 +322,7 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
       return null;
     }
 
-    return (
-      beats.find((beat) => beat.id === selectedBeatId) ??
-      null
-    );
+    return beats.find((beat) => beat.id === selectedBeatId) ?? null;
   }, [beats, selectedBeatId]);
 
   const { nodes, edges } = useMemo(() => {
@@ -366,7 +345,8 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
 
   return (
     <>
-    {selectedBeat && (
+      <GraphLegend />
+      {selectedBeat && (
         <div className="mt-3">
           <StoryBeatActionPanel
             beat={selectedBeat}
@@ -383,7 +363,9 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          edgesFocusable={false}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           nodesDraggable={false}
           nodesConnectable={false}
@@ -394,7 +376,6 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
           <Controls showInteractive={false} />
         </ReactFlow>
       </div>
-      
     </>
   );
 }
