@@ -57,6 +57,7 @@ export async function getCampaignBeats(
       fromBeatId: t.fromBeatId,
       toBeatId: t.toBeatId,
       transitionType: t.transitionType,
+      conditionDescription: t.conditionDescription,
       isHidden: t.isHidden,
     })),
     incomingTransitions: beat.incomingTransitions.map((t) => ({
@@ -64,6 +65,7 @@ export async function getCampaignBeats(
       fromBeatId: t.fromBeatId,
       toBeatId: t.toBeatId,
       transitionType: t.transitionType,
+      conditionDescription: t.conditionDescription,
       isHidden: t.isHidden,
     })),
   }));

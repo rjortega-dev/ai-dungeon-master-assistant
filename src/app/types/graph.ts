@@ -5,6 +5,7 @@ export type TransitionForGraph = {
   fromBeatId: string;
   toBeatId: string;
   transitionType: string;
+  conditionDescription: string | null;
   isHidden: boolean;
 };
 

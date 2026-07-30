@@ -15,9 +15,14 @@ import type { CampaignBeatsResponse, BeatForGraph } from "@/app/types/graph";
 import { StoryBeatActionPanel } from "./StoryBeatActionPanel";
 import { flushSync } from "react-dom";
 import { GraphLegend } from "./GraphLegend";
+import { StoryBeatEdge } from "./StoryBeatEdge";
 
 const nodeTypes = {
   storyBeat: StoryBeatNode,
+};
+
+const edgeTypes = {
+  storyBeatEdge: StoryBeatEdge,
 };
 
 const NODE_WIDTH = 200;
@@ -80,21 +85,13 @@ function buildEdges(beats: BeatForGraph[]): Edge[] {
         id: transition.id,
         source: transition.fromBeatId,
         target: transition.toBeatId,
-        type: "smoothstep",
-        label: isSecret ? "???" : undefined,
-        labelStyle: {
-          fill: "var(--foreground)",
-          fontSize: 10,
-          fontWeight: 600,
-        },
-        labelBgStyle: { fill: "var(--card-bg)", fillOpacity: 0.9 },
-        labelBgPadding: [4, 2] as [number, number],
-        labelBgBorderRadius: 4,
-        style: {
-          stroke: color,
-          strokeWidth: isDimmed ? 1.5 : 2.5,
-          strokeDasharray: isSecret ? "4 4" : undefined,
-          opacity: isDimmed ? 0.3 : 0.9,
+        type: "storyBeatEdge",
+        data: {
+          transitionType: transition.transitionType,
+          conditionDescription: transition.conditionDescription,
+          isHidden: transition.isHidden,
+          color,
+          isDimmed,
         },
       };
     }),
@@ -366,7 +363,9 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          edgesFocusable={false}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           nodesDraggable={false}
           nodesConnectable={false}
