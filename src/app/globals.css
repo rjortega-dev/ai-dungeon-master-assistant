@@ -9,6 +9,14 @@
   --card-bg: #1e1a2e;
   --muted: #8a7a9a;
   --glow: rgba(130, 80, 200, 0.1);
+  --edge-success: #a87c2a;
+  --edge-failure: #9b2c2c;
+  --edge-optional: #6b5a7a;
+  --edge-secret: #5b21b6;
+  --edge-combat-win: #3a6b4a;
+  --edge-combat-loss: #9a4a1a;
+  --edge-accept: #1a6a7a;
+  --edge-reject: #7a1a2a;
 }
 
 html[data-theme="light"] {
@@ -19,6 +27,14 @@ html[data-theme="light"] {
   --card-bg: #fef8f0;
   --muted: #8a6a50;
   --glow: rgba(176, 90, 42, 0.07);
+  --edge-success: #8a5a0a;
+  --edge-failure: #7a1a1a;
+  --edge-optional: #5a4a6a;
+  --edge-secret: #4a1a9a;
+  --edge-combat-win: #2a5a3a;
+  --edge-combat-loss: #7a3a0a;
+  --edge-accept: #0a4a5a;
+  --edge-reject: #5a0a1a;
 }
 
 *,
