@@ -16,6 +16,7 @@ import { StoryBeatActionPanel } from "./StoryBeatActionPanel";
 import { flushSync } from "react-dom";
 import { GraphLegend } from "./GraphLegend";
 import { StoryBeatEdge } from "./StoryBeatEdge";
+import { computeBeatState, computeForeclosedSet } from "@/lib/beat-graph-state";
 
 const nodeTypes = {
   storyBeat: StoryBeatNode,
@@ -27,21 +28,6 @@ const edgeTypes = {
 
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
-
-function computeStateClient(
-  beat: BeatForGraph,
-  allBeats: BeatForGraph[],
-): BeatForGraph["state"] {
-  if (beat.completedAt !== null) return "completed";
-  if (beat.incomingTransitions.length === 0) return "current";
-
-  const anyIncomingCompleted = beat.incomingTransitions.some((t) => {
-    const fromBeat = allBeats.find((b) => b.id === t.fromBeatId);
-    return fromBeat?.completedAt !== null;
-  });
-
-  return anyIncomingCompleted ? "current" : "default";
-}
 
 function buildNodes(
   beats: BeatForGraph[],
@@ -78,8 +64,7 @@ function buildEdges(beats: BeatForGraph[]): Edge[] {
     beat.outgoingTransitions.map((transition) => {
       const color =
         TRANSITION_COLORS[transition.transitionType] ?? "var(--edge-optional)";
-      const isSecret = transition.isHidden;
-      const isDimmed = beat.state === "default";
+      const isDimmed = beat.state === "default" || beat.state === "foreclosed";
 
       return {
         id: transition.id,
@@ -273,9 +258,18 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
             }
           : beat,
       );
+
+      const currentActiveBeatId =
+        previousBeats.find((b) => b.state === "active")?.id ?? null;
+      const foreclosedIds = computeForeclosedSet(optimisticBeats);
       const optimisticBeatsWithState = optimisticBeats.map((beat) => ({
         ...beat,
-        state: computeStateClient(beat, optimisticBeats),
+        state: computeBeatState(
+          beat,
+          optimisticBeats,
+          currentActiveBeatId,
+          foreclosedIds,
+        ),
       }));
 
       flushSync(() => {
