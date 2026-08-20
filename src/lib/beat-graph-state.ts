@@ -15,26 +15,32 @@ export type BeatLike = {
   outgoingTransitions: TransitionLike[];
 };
 
-export function computeForeclosedSet<T extends BeatLike>(
-  allBeats: T[],
-): Set<string> {
-  const foreclosed = new Set<string>();
-  const visited = new Set<string>();
-  const beatById = new Map(allBeats.map((b) => [b.id, b]));
+export type ForeclosureClassification = {
+  foreclosedIds: Set<string>;
+  hardForeclosedIds: Set<string>;
+};
 
-  function cascade(beatId: string) {
-    if (visited.has(beatId)) return;
-    visited.add(beatId);
+export function computeForeclosureClassification<T extends BeatLike>(
+  allBeats: T[],
+): ForeclosureClassification {
+  const beatById = new Map(allBeats.map((b) => [b.id, b]));
+  const classification = new Map<string, "hard" | "soft">();
+
+  function visit(beatId: string, kind: "hard" | "soft") {
+    const current = classification.get(beatId);
+    if (current === "hard") return; // already worst case, nothing left to do
+
+    const isNewOrUpgraded =
+      current === undefined || (current === "soft" && kind === "hard");
+    classification.set(beatId, kind === "hard" ? "hard" : (current ?? "soft"));
+
+    if (!isNewOrUpgraded) return;
 
     const target = beatById.get(beatId);
     if (!target) return;
 
-    if (target.completedAt === null) {
-      foreclosed.add(beatId);
-    }
-
     for (const next of target.outgoingTransitions) {
-      cascade(next.toBeatId);
+      visit(next.toBeatId, kind);
     }
   }
 
@@ -48,11 +54,29 @@ export function computeForeclosedSet<T extends BeatLike>(
 
     for (const sibling of beat.outgoingTransitions) {
       if (sibling.id === takenExclusive.id) continue;
-      cascade(sibling.toBeatId);
+      const kind: "hard" | "soft" = sibling.isBranch ? "soft" : "hard";
+      visit(sibling.toBeatId, kind);
     }
   }
 
-  return foreclosed;
+  const foreclosedIds = new Set<string>();
+  const hardForeclosedIds = new Set<string>();
+
+  for (const [id, kind] of classification) {
+    const beat = beatById.get(id);
+    if (beat?.completedAt !== null) continue;
+
+    foreclosedIds.add(id);
+    if (kind === "hard") hardForeclosedIds.add(id);
+  }
+
+  return { foreclosedIds, hardForeclosedIds };
+}
+
+export function computeForeclosedSet<T extends BeatLike>(
+  allBeats: T[],
+): Set<string> {
+  return computeForeclosureClassification(allBeats).foreclosedIds;
 }
 
 export function computeBeatState<T extends BeatLike>(
