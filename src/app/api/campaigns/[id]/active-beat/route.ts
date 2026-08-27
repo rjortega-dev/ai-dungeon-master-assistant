@@ -1,75 +1,40 @@
-import { prisma } from "@/lib/prisma/prisma";
-import { computeForeclosureClassification } from "@/lib/beat-graph-state";
+import { NextRequest, NextResponse } from "next/server";
+import { setActiveBeat } from "@/features/campaigns/api/set-active-beat";
 
-type SetActiveBeatResult =
-  | { success: true; id: string; activeBeatId: string }
-  | {
-      success: false;
-      error:
-        | "NOT_FOUND"
-        | "ALREADY_COMPLETED"
-        | "HARD_FORECLOSED"
-        | "CAMPAIGN_MISMATCH";
-    };
+// PATCH /api/campaigns/[id]/active-beat — sets the campaign's active beat
+// directly, without completing anything. Body: { beatId }.
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id: campaignId } = await params;
 
-export async function setActiveBeat(
-  beatId: string,
-  campaignId: string,
-): Promise<SetActiveBeatResult> {
-  const beat = await prisma.storyBeat.findUnique({
-    where: { id: beatId },
-    select: { id: true, completedAt: true, campaignId: true },
-  });
-
-  if (!beat) return { success: false, error: "NOT_FOUND" };
-  if (beat.campaignId !== campaignId) {
-    return { success: false, error: "CAMPAIGN_MISMATCH" };
-  }
-  if (beat.completedAt !== null) {
-    return { success: false, error: "ALREADY_COMPLETED" };
+  let beatId: string | undefined;
+  try {
+    const body = await request.json();
+    beatId = body?.beatId;
+  } catch {
+    // fall through to the missing-beatId check below
   }
 
-  const allBeats = await prisma.storyBeat.findMany({
-    where: { campaignId: beat.campaignId },
-    include: { outgoingTransitions: true, incomingTransitions: true },
-  });
-
-  const serialized = allBeats.map((b) => ({
-    id: b.id,
-    completedAt: b.completedAt?.toISOString() ?? null,
-    outgoingTransitions: b.outgoingTransitions.map((t) => ({
-      id: t.id,
-      fromBeatId: t.fromBeatId,
-      toBeatId: t.toBeatId,
-      isBranch: t.isBranch,
-      takenAt: t.takenAt?.toISOString() ?? null,
-    })),
-    incomingTransitions: b.incomingTransitions.map((t) => ({
-      id: t.id,
-      fromBeatId: t.fromBeatId,
-      toBeatId: t.toBeatId,
-      isBranch: t.isBranch,
-      takenAt: t.takenAt?.toISOString() ?? null,
-    })),
-  }));
-
-  const { hardForeclosedIds } = computeForeclosureClassification(serialized);
-
-  if (hardForeclosedIds.has(beatId)) {
-    return { success: false, error: "HARD_FORECLOSED" };
+  if (!beatId) {
+    return NextResponse.json({ error: "beatId is required" }, { status: 400 });
   }
 
-  const activeCampaign = await prisma.activeCampaign.findUnique({
-    where: { campaignID: beat.campaignId },
-    select: { id: true },
-  });
+  const result = await setActiveBeat(beatId, campaignId);
 
-  if (!activeCampaign) return { success: false, error: "NOT_FOUND" };
+  if (!result.success) {
+    const status =
+      result.error === "NOT_FOUND"
+        ? 404
+        : result.error === "ALREADY_COMPLETED"
+          ? 409
+          : result.error === "CAMPAIGN_MISMATCH"
+            ? 400
+            : 403; // HARD_FORECLOSED
 
-  await prisma.activeCampaign.update({
-    where: { id: activeCampaign.id },
-    data: { activeBeatId: beatId },
-  });
+    return NextResponse.json({ error: result.error }, { status });
+  }
 
-  return { success: true, id: beatId, activeBeatId: beatId };
+  return NextResponse.json(result, { status: 200 });
 }

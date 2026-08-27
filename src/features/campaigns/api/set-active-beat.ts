@@ -5,11 +5,16 @@ type SetActiveBeatResult =
   | { success: true; id: string; activeBeatId: string }
   | {
       success: false;
-      error: "NOT_FOUND" | "ALREADY_COMPLETED" | "HARD_FORECLOSED";
+      error:
+        | "NOT_FOUND"
+        | "ALREADY_COMPLETED"
+        | "HARD_FORECLOSED"
+        | "CAMPAIGN_MISMATCH";
     };
 
 export async function setActiveBeat(
   beatId: string,
+  campaignId: string,
 ): Promise<SetActiveBeatResult> {
   const beat = await prisma.storyBeat.findUnique({
     where: { id: beatId },
@@ -17,6 +22,9 @@ export async function setActiveBeat(
   });
 
   if (!beat) return { success: false, error: "NOT_FOUND" };
+  if (beat.campaignId !== campaignId) {
+    return { success: false, error: "CAMPAIGN_MISMATCH" };
+  }
   if (beat.completedAt !== null) {
     return { success: false, error: "ALREADY_COMPLETED" };
   }
