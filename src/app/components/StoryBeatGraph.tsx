@@ -233,6 +233,12 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
 
   const handleSelect = useCallback((beatId: string) => {
     setActionError(null);
+    setErrorBeatIds((prev) => {
+      if (!prev.has(beatId)) return prev;
+      const next = new Set(prev);
+      next.delete(beatId);
+      return next;
+    });
     setSelectedBeatId((current) => (current === beatId ? null : beatId));
   }, []);
 
