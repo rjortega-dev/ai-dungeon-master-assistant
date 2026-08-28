@@ -17,6 +17,7 @@ export type BeatLike = {
 
 export type ForeclosureClassification = {
   foreclosedIds: Set<string>;
+
   hardForeclosedIds: Set<string>;
 };
 
@@ -26,21 +27,11 @@ export function computeForeclosureClassification<T extends BeatLike>(
   const beatById = new Map(allBeats.map((b) => [b.id, b]));
   const classification = new Map<string, "hard" | "soft">();
 
-  function visit(beatId: string, kind: "hard" | "soft") {
-    const current = classification.get(beatId);
-    if (current === "hard") return; // already worst case, nothing left to do
-
-    const isNewOrUpgraded =
-      current === undefined || (current === "soft" && kind === "hard");
-    classification.set(beatId, kind === "hard" ? "hard" : (current ?? "soft"));
-
-    if (!isNewOrUpgraded) return;
-
-    const target = beatById.get(beatId);
-    if (!target) return;
-
-    for (const next of target.outgoingTransitions) {
-      visit(next.toBeatId, kind);
+  function classify(beatId: string, kind: "hard" | "soft") {
+    const existing = classification.get(beatId);
+    if (existing === "hard") return; // already worst case
+    if (kind === "hard" || existing === undefined) {
+      classification.set(beatId, kind);
     }
   }
 
@@ -54,8 +45,12 @@ export function computeForeclosureClassification<T extends BeatLike>(
 
     for (const sibling of beat.outgoingTransitions) {
       if (sibling.id === takenExclusive.id) continue;
+
+      const target = beatById.get(sibling.toBeatId);
+      if (!target || target.completedAt !== null) continue;
+
       const kind: "hard" | "soft" = sibling.isBranch ? "soft" : "hard";
-      visit(sibling.toBeatId, kind);
+      classify(sibling.toBeatId, kind);
     }
   }
 
@@ -63,9 +58,6 @@ export function computeForeclosureClassification<T extends BeatLike>(
   const hardForeclosedIds = new Set<string>();
 
   for (const [id, kind] of classification) {
-    const beat = beatById.get(id);
-    if (beat?.completedAt !== null) continue;
-
     foreclosedIds.add(id);
     if (kind === "hard") hardForeclosedIds.add(id);
   }
