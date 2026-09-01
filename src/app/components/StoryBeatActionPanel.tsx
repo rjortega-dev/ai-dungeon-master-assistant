@@ -111,9 +111,29 @@ export function StoryBeatActionPanel({
         </button>
       )}
 
-      {beat.state === "default" && (
-        <p className="text-xs text-muted">Not yet reachable.</p>
-      )}
+      {beat.state === "default" &&
+        (() => {
+          const activeBeat = allBeats.find((b) => b.state === "active");
+          const incomingFromActive = activeBeat?.outgoingTransitions.find(
+            (t) => t.toBeatId === beat.id,
+          );
+
+          if (!activeBeat || !incomingFromActive) {
+            return <p className="text-xs text-muted">Not yet reachable.</p>;
+          }
+
+          return (
+            <button
+              onClick={() => onComplete(activeBeat.id, incomingFromActive.id)}
+              disabled={isUpdating}
+              className="self-start rounded-md border border-accent/40 px-3 py-1.5 text-sm text-accent-text hover:bg-accent/10 transition-colors disabled:opacity-50"
+            >
+              {isUpdating
+                ? "Updating..."
+                : `Take this path from "${activeBeat.title}"`}
+            </button>
+          );
+        })()}
     </div>
   );
 }
