@@ -1,29 +1,10 @@
 import { prisma } from "@/lib/prisma/prisma";
-import { Prisma } from "@/../generated/prisma";
-import { BeatForGraph, BeatState } from "@/app/types/graph";
-
-type BeatWithTransitions = Prisma.StoryBeatGetPayload<{
-  include: {
-    outgoingTransitions: true;
-    incomingTransitions: true;
-  };
-}>;
-
-function computeState(
-  beat: BeatWithTransitions,
-  allBeats: BeatWithTransitions[],
-): BeatState {
-  if (beat.completedAt !== null) return "completed";
-
-  if (beat.incomingTransitions.length === 0) return "current";
-
-  const anyIncomingCompleted = beat.incomingTransitions.some((transition) => {
-    const fromBeat = allBeats.find((b) => b.id === transition.fromBeatId);
-    return fromBeat?.completedAt !== null;
-  });
-
-  return anyIncomingCompleted ? "current" : "default";
-}
+import { BeatForGraph } from "@/app/types/graph";
+import {
+  computeBeatState,
+  computeForeclosedSet,
+  type BeatLike,
+} from "@/lib/beat-graph-state";
 
 export async function getCampaignBeats(
   campaignId: string,
@@ -35,23 +16,59 @@ export async function getCampaignBeats(
 
   if (!campaign) return null;
 
-  const beats = await prisma.storyBeat.findMany({
-    where: { campaignId },
-    orderBy: { sequenceOrder: "asc" },
-    include: {
-      outgoingTransitions: true,
-      incomingTransitions: true,
-    },
-  });
+  const [beats, activeCampaign] = await Promise.all([
+    prisma.storyBeat.findMany({
+      where: { campaignId },
+      orderBy: { sequenceOrder: "asc" },
+      include: {
+        outgoingTransitions: true,
+        incomingTransitions: true,
+      },
+    }),
+    prisma.activeCampaign.findUnique({
+      where: { campaignID: campaignId },
+      select: { activeBeatId: true },
+    }),
+  ]);
 
-  return beats.map((beat) => ({
+  const activeBeatId = activeCampaign?.activeBeatId ?? null;
+
+  // Serialize once, up front — the shared state functions work on
+  // string dates so the exact same logic runs client-side too.
+  const serialized: BeatLike[] = beats.map((beat) => ({
+    id: beat.id,
+    completedAt: beat.completedAt?.toISOString() ?? null,
+    outgoingTransitions: beat.outgoingTransitions.map((t) => ({
+      id: t.id,
+      fromBeatId: t.fromBeatId,
+      toBeatId: t.toBeatId,
+      isBranch: t.isBranch,
+      takenAt: t.takenAt?.toISOString() ?? null,
+    })),
+    incomingTransitions: beat.incomingTransitions.map((t) => ({
+      id: t.id,
+      fromBeatId: t.fromBeatId,
+      toBeatId: t.toBeatId,
+      isBranch: t.isBranch,
+      takenAt: t.takenAt?.toISOString() ?? null,
+    })),
+  }));
+
+  const foreclosedIds = computeForeclosedSet(serialized);
+
+  return beats.map((beat, i) => ({
     id: beat.id,
     title: beat.title,
     description: beat.description,
     beatType: beat.beatType,
     sequenceOrder: beat.sequenceOrder,
-    completedAt: beat.completedAt?.toISOString() ?? null,
-    state: computeState(beat, beats),
+    completedAt: serialized[i].completedAt,
+    state: computeBeatState(
+      serialized[i],
+      serialized,
+      activeBeatId,
+      foreclosedIds,
+    ),
     outgoingTransitions: beat.outgoingTransitions.map((t) => ({
       id: t.id,
       fromBeatId: t.fromBeatId,
@@ -59,6 +76,8 @@ export async function getCampaignBeats(
       transitionType: t.transitionType,
       conditionDescription: t.conditionDescription,
       isHidden: t.isHidden,
+      isBranch: t.isBranch,
+      takenAt: t.takenAt?.toISOString() ?? null,
     })),
     incomingTransitions: beat.incomingTransitions.map((t) => ({
       id: t.id,
@@ -67,6 +86,8 @@ export async function getCampaignBeats(
       transitionType: t.transitionType,
       conditionDescription: t.conditionDescription,
       isHidden: t.isHidden,
+      isBranch: t.isBranch,
+      takenAt: t.takenAt?.toISOString() ?? null,
     })),
   }));
 }

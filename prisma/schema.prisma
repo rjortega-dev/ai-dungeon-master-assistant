@@ -131,14 +131,17 @@ model Campaign {
 
 model ActiveCampaign {
   id              String           @id @default(uuid()) @db.Uuid
-  campaignID      String           @db.Uuid
+  campaignID      String           @unique @db.Uuid
   dmUser          String           @db.Uuid
+  activeBeatId    String?          @db.Uuid
+
   beatTransitions BeatTransition[]
 
-  campaign Campaign @relation(fields: [campaignID], references: [id])
-  dm       User     @relation(fields: [dmUser], references: [id])
+  campaign    Campaign    @relation(fields: [campaignID], references: [id])
+  dm          User        @relation(fields: [dmUser], references: [id])
+  activeBeat  StoryBeat?  @relation(fields: [activeBeatId], references: [id])
 
-  @@index([campaignID])
+  @@index([activeBeatId])
 }
 
 // ======================================================
@@ -278,19 +281,18 @@ model StoryBeat {
   sequenceOrder Int?
 
   completedAt DateTime?
-  
+
   metadata Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   campaign Campaign @relation(fields: [campaignId], references: [id])
 
-  // Transition Relationships
   outgoingTransitions BeatTransition[] @relation("FromBeat")
-
   incomingTransitions BeatTransition[] @relation("ToBeat")
+
+  activeInCampaigns ActiveCampaign[]
 
   @@index([campaignId])
 }
@@ -310,19 +312,18 @@ model BeatTransition {
   transitionType TransitionType
 
   conditionDescription String?
-
-  conditionJson Json?
+  conditionJson         Json?
 
   isHidden Boolean @default(false)
+  isBranch Boolean @default(false)
+
+  takenAt DateTime?
 
   createdAt DateTime @default(now())
 
-  // Relations
   campaign ActiveCampaign @relation(fields: [campaignId], references: [id])
-
-  fromBeat StoryBeat @relation("FromBeat", fields: [fromBeatId], references: [id])
-
-  toBeat StoryBeat @relation("ToBeat", fields: [toBeatId], references: [id])
+  fromBeat StoryBeat      @relation("FromBeat", fields: [fromBeatId], references: [id])
+  toBeat   StoryBeat      @relation("ToBeat", fields: [toBeatId], references: [id])
 
   @@index([campaignId])
   @@index([fromBeatId])

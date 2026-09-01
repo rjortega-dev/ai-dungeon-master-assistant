@@ -16,6 +16,7 @@ import { StoryBeatActionPanel } from "./StoryBeatActionPanel";
 import { flushSync } from "react-dom";
 import { GraphLegend } from "./GraphLegend";
 import { StoryBeatEdge } from "./StoryBeatEdge";
+import { computeBeatState, computeForeclosedSet } from "@/lib/beat-graph-state";
 
 const nodeTypes = {
   storyBeat: StoryBeatNode,
@@ -27,21 +28,6 @@ const edgeTypes = {
 
 const NODE_WIDTH = 200;
 const NODE_HEIGHT = 70;
-
-function computeStateClient(
-  beat: BeatForGraph,
-  allBeats: BeatForGraph[],
-): BeatForGraph["state"] {
-  if (beat.completedAt !== null) return "completed";
-  if (beat.incomingTransitions.length === 0) return "current";
-
-  const anyIncomingCompleted = beat.incomingTransitions.some((t) => {
-    const fromBeat = allBeats.find((b) => b.id === t.fromBeatId);
-    return fromBeat?.completedAt !== null;
-  });
-
-  return anyIncomingCompleted ? "current" : "default";
-}
 
 function buildNodes(
   beats: BeatForGraph[],
@@ -78,8 +64,7 @@ function buildEdges(beats: BeatForGraph[]): Edge[] {
     beat.outgoingTransitions.map((transition) => {
       const color =
         TRANSITION_COLORS[transition.transitionType] ?? "var(--edge-optional)";
-      const isSecret = transition.isHidden;
-      const isDimmed = beat.state === "default";
+      const isDimmed = beat.state === "default" || beat.state === "foreclosed";
 
       return {
         id: transition.id,
@@ -139,8 +124,6 @@ function offsetSideQuestLanes(
 ): Node<StoryBeatNodeData>[] {
   const beatById = new Map(beats.map((beat) => [beat.id, beat]));
 
-  // Build adjacency from side-quest beats to their side-quest neighbors only,
-  // so we can group connected side-quest chains into the same "lane."
   const sideQuestNeighbors = new Map<string, string[]>();
 
   beats.forEach((beat) => {
@@ -163,7 +146,6 @@ function offsetSideQuestLanes(
     sideQuestNeighbors.set(beat.id, neighbors);
   });
 
-  // Group connected side-quest beats into lanes via simple connected-components search
   const visited = new Set<string>();
   const lanes: string[][] = [];
 
@@ -216,6 +198,7 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
   const [selectedBeatId, setSelectedBeatId] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [errorBeatIds, setErrorBeatIds] = useState<Set<string>>(new Set());
+  const [actionError, setActionError] = useState<string | null>(null);
   const colorMode = useColorMode();
 
   useEffect(() => {
@@ -249,37 +232,39 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
   }, [campaignId]);
 
   const handleSelect = useCallback((beatId: string) => {
+    setActionError(null);
+    setErrorBeatIds((prev) => {
+      if (!prev.has(beatId)) return prev;
+      const next = new Set(prev);
+      next.delete(beatId);
+      return next;
+    });
     setSelectedBeatId((current) => (current === beatId ? null : beatId));
   }, []);
 
-  const handleToggleComplete = useCallback(
-    async (beatId: string) => {
+  const refetchBeats = useCallback(async () => {
+    const refreshed = await fetch(`/api/campaigns/${campaignId}/beats`);
+    if (!refreshed.ok) throw new Error("Failed to refresh graph");
+    const data: CampaignBeatsResponse = await refreshed.json();
+    setBeats(data.beats);
+  }, [campaignId]);
+
+  // Shared plumbing for all three write actions: optimistic local update,
+  // fire the request, refetch on success to reconcile, roll back on failure
+  // and surface the server's error reason.
+  const runAction = useCallback(
+    async (
+      beatId: string,
+      optimisticBeats: BeatForGraph[],
+      request: () => Promise<Response>,
+    ) => {
       const previousBeats = beats;
       if (!previousBeats) return;
 
-      const targetBeat = previousBeats.find((beat) => beat.id === beatId);
-
-      if (!targetBeat) return;
-
-      const isCurrentlyComplete = targetBeat.completedAt !== null;
-
-      const optimisticBeats = previousBeats.map((beat) =>
-        beat.id === beatId
-          ? {
-              ...beat,
-              completedAt: isCurrentlyComplete
-                ? null
-                : new Date().toISOString(),
-            }
-          : beat,
-      );
-      const optimisticBeatsWithState = optimisticBeats.map((beat) => ({
-        ...beat,
-        state: computeStateClient(beat, optimisticBeats),
-      }));
+      setActionError(null);
 
       flushSync(() => {
-        setBeats(optimisticBeatsWithState);
+        setBeats(optimisticBeats);
         setIsUpdating(true);
         setErrorBeatIds((prev) => {
           const next = new Set(prev);
@@ -289,32 +274,130 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
       });
 
       try {
-        const response = await fetch(`/api/beats/${beatId}/complete`, {
-          method: "PATCH",
-        });
+        const response = await request();
 
         if (!response.ok) {
-          throw new Error("Failed to update beat");
+          const body = await response.json().catch(() => null);
+          throw new Error(body?.error ?? "UNKNOWN_ERROR");
         }
 
-        const refreshed = await fetch(`/api/campaigns/${campaignId}/beats`);
-
-        if (!refreshed.ok) {
-          throw new Error("Failed to refresh graph");
-        }
-
-        const data: CampaignBeatsResponse = await refreshed.json();
-
-        setBeats(data.beats);
-      } catch {
+        await refetchBeats();
+      } catch (err) {
         setBeats(previousBeats);
-
         setErrorBeatIds((prev) => new Set(prev).add(beatId));
+        setActionError(err instanceof Error ? err.message : "UNKNOWN_ERROR");
       } finally {
         setIsUpdating(false);
       }
     },
-    [beats, campaignId],
+    [beats, refetchBeats],
+  );
+
+  const handleComplete = useCallback(
+    (beatId: string, transitionId?: string) => {
+      if (!beats) return;
+
+      const now = new Date().toISOString();
+      const chosenTransition = transitionId
+        ? beats
+            .find((b) => b.id === beatId)
+            ?.outgoingTransitions.find((t) => t.id === transitionId)
+        : undefined;
+
+      const withCompletion = beats.map((beat) =>
+        beat.id === beatId ? { ...beat, completedAt: now } : beat,
+      );
+
+      const withTakenTransition = withCompletion.map((beat) =>
+        beat.id === beatId
+          ? {
+              ...beat,
+              outgoingTransitions: beat.outgoingTransitions.map((t) =>
+                t.id === transitionId ? { ...t, takenAt: now } : t,
+              ),
+            }
+          : beat,
+      );
+
+      const nextActiveBeatId = chosenTransition?.toBeatId ?? null;
+      const foreclosedIds = computeForeclosedSet(withTakenTransition);
+      const optimisticBeats = withTakenTransition.map((beat) => ({
+        ...beat,
+        state: computeBeatState(
+          beat,
+          withTakenTransition,
+          nextActiveBeatId,
+          foreclosedIds,
+        ),
+      }));
+
+      runAction(beatId, optimisticBeats, () =>
+        fetch(`/api/beats/${beatId}/complete`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transitionId }),
+        }),
+      );
+    },
+    [beats, runAction],
+  );
+
+  const handleUncomplete = useCallback(
+    (beatId: string) => {
+      if (!beats) return;
+
+      const beat = beats.find((b) => b.id === beatId);
+      if (!beat) return;
+
+      const takenTransition = beat.outgoingTransitions.find(
+        (t) => !t.isBranch && t.takenAt !== null,
+      );
+
+      const reverted = beats.map((b) => {
+        if (b.id === beatId) {
+          return {
+            ...b,
+            completedAt: null,
+            outgoingTransitions: b.outgoingTransitions.map((t) =>
+              t.id === takenTransition?.id ? { ...t, takenAt: null } : t,
+            ),
+          };
+        }
+        return b;
+      });
+
+      const foreclosedIds = computeForeclosedSet(reverted);
+      const optimisticBeats = reverted.map((b) => ({
+        ...b,
+        state: computeBeatState(b, reverted, beatId, foreclosedIds),
+      }));
+
+      runAction(beatId, optimisticBeats, () =>
+        fetch(`/api/beats/${beatId}/complete`, { method: "DELETE" }),
+      );
+    },
+    [beats, runAction],
+  );
+
+  const handleSetActive = useCallback(
+    (beatId: string) => {
+      if (!beats) return;
+
+      const foreclosedIds = computeForeclosedSet(beats);
+      const optimisticBeats = beats.map((b) => ({
+        ...b,
+        state: computeBeatState(b, beats, beatId, foreclosedIds),
+      }));
+
+      runAction(beatId, optimisticBeats, () =>
+        fetch(`/api/campaigns/${campaignId}/active-beat`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ beatId }),
+        }),
+      );
+    },
+    [beats, campaignId, runAction],
   );
 
   const selectedBeat = useMemo(() => {
@@ -350,9 +433,13 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
         <div className="mt-3">
           <StoryBeatActionPanel
             beat={selectedBeat}
-            onToggleComplete={handleToggleComplete}
+            allBeats={beats}
+            onComplete={handleComplete}
+            onUncomplete={handleUncomplete}
+            onSetActive={handleSetActive}
             onClose={() => setSelectedBeatId(null)}
             isUpdating={isUpdating}
+            actionError={actionError}
           />
         </div>
       )}

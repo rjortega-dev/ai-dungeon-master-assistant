@@ -11,7 +11,10 @@ export type StoryBeatNodeData = {
 
 const stateStyles: Record<BeatState, string> = {
   completed: "border-green-500/60 bg-green-500/10 text-green-400",
-  current: "border-accent bg-card text-foreground shadow-[0_0_12px_rgba(0,0,0,0.1)]",
+  active:
+    "border-accent bg-card text-foreground shadow-[0_0_12px_rgba(0,0,0,0.1)]",
+  available: "border-accent/40 bg-card text-foreground",
+  foreclosed: "border-red-500/30 bg-card/40 text-muted line-through opacity-60",
   default: "border-foreground/15 bg-card/50 text-muted",
 };
 
@@ -28,7 +31,9 @@ export function StoryBeatNode({
         {data.beatType}
       </p>
       {data.hasError && (
-        <p className="text-xs text-red-400 mt-1">Failed to update — try again</p>
+        <p className="text-xs text-red-400 mt-1">
+          Failed to update — try again
+        </p>
       )}
       <Handle type="source" position={Position.Bottom} />
     </div>

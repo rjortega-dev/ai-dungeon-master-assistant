@@ -10,10 +10,23 @@ const LEGEND_ITEMS = [
 ];
 
 const NODE_LEGEND_ITEMS = [
-  { label: "Current", className: "border-accent bg-card text-foreground" },
+  {
+    label: "Active",
+    className:
+      "border-accent bg-card text-foreground shadow-[0_0_12px_rgba(0,0,0,0.1)]",
+  },
+  {
+    label: "Available",
+    className: "border-accent/40 bg-card text-foreground",
+  },
   {
     label: "Completed",
     className: "border-green-500/60 bg-green-500/10 text-green-400",
+  },
+  {
+    label: "Foreclosed",
+    className:
+      "border-red-500/30 bg-card/40 text-muted line-through opacity-60",
   },
   { label: "Locked", className: "border-foreground/15 bg-card/50 text-muted" },
 ];

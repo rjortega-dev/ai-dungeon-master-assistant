@@ -181,7 +181,7 @@ async function main() {
   });
 
   // ======================================================
-  // STORY BEATS (14 total: 8 main, 6 side)
+  // STORY BEATS (15 total: 9 main, 6 side)
   // ======================================================
 
   const beat1 = await prisma.storyBeat.create({
@@ -327,9 +327,21 @@ async function main() {
     data: {
       campaignId: campaign.id,
       title: "The Shattered Crown Reclaimed",
-      description: "The kingdom's fate is sealed, for better or worse.",
+      description:
+        "The party restores the bloodline and reclaims the crown for Valeris.",
       beatType: BeatType.ENDING,
       sequenceOrder: 14,
+    },
+  });
+
+  const beat15 = await prisma.storyBeat.create({
+    data: {
+      campaignId: campaign.id,
+      title: "The Crown Shattered Forever",
+      description:
+        "The party chooses to destroy the crown outright, ending the bloodline for good.",
+      beatType: BeatType.ENDING,
+      sequenceOrder: 15,
     },
   });
 
@@ -339,7 +351,6 @@ async function main() {
 
   await prisma.beatTransition.createMany({
     data: [
-      // Main spine: 1 -> 2
       {
         campaignId: activeCampaign.id,
         fromBeatId: beat1.id,
@@ -349,8 +360,6 @@ async function main() {
           "Players successfully gain audience with the council.",
         isHidden: false,
       },
-
-      // Side branch off 2: 2 -> 3 -> 4 -> 5 -> 6 (rejoins main)
       {
         campaignId: activeCampaign.id,
         fromBeatId: beat2.id,
@@ -359,6 +368,7 @@ async function main() {
         conditionDescription:
           "Players seek out the Thieves' Guild instead of proceeding directly.",
         isHidden: false,
+        isBranch: true,
       },
       {
         campaignId: activeCampaign.id,
@@ -384,8 +394,6 @@ async function main() {
         conditionDescription: "Heist succeeds, vault location confirmed.",
         isHidden: false,
       },
-
-      // Direct main path, skipping the side quest: 2 -> 6
       {
         campaignId: activeCampaign.id,
         fromBeatId: beat2.id,
@@ -395,8 +403,6 @@ async function main() {
           "Players proceed directly to the vault without the Guild's help.",
         isHidden: false,
       },
-
-      // Main spine: 6 -> 7
       {
         campaignId: activeCampaign.id,
         fromBeatId: beat6.id,
@@ -405,8 +411,6 @@ async function main() {
         conditionDescription: "Vault artifact leads directly to Seraphine.",
         isHidden: false,
       },
-
-      // Side branch off 7: 7 -> 8 (rejoins at 11)
       {
         campaignId: activeCampaign.id,
         fromBeatId: beat7.id,
@@ -415,6 +419,7 @@ async function main() {
         conditionDescription:
           "Players press Seraphine further about the ritual.",
         isHidden: false,
+        isBranch: true,
       },
       {
         campaignId: activeCampaign.id,
@@ -425,8 +430,6 @@ async function main() {
           "Ritual chamber evidence strengthens the council's resolve.",
         isHidden: false,
       },
-
-      // Hidden side branch off 7: 7 -> 9 -> 10 (rejoins at 11)
       {
         campaignId: activeCampaign.id,
         fromBeatId: beat7.id,
@@ -435,6 +438,7 @@ async function main() {
         conditionDescription:
           "Players discover a hidden passage during the confrontation.",
         isHidden: true,
+        isBranch: true,
       },
       {
         campaignId: activeCampaign.id,
@@ -453,8 +457,6 @@ async function main() {
           "Catacomb relics provide additional leverage with the council.",
         isHidden: false,
       },
-
-      // Direct main path, skipping both side branches: 7 -> 11
       {
         campaignId: activeCampaign.id,
         fromBeatId: beat7.id,
@@ -464,8 +466,6 @@ async function main() {
           "Players proceed straight to rallying the council.",
         isHidden: false,
       },
-
-      // Main spine: 11 -> 12 -> 13 -> 14
       {
         campaignId: activeCampaign.id,
         fromBeatId: beat11.id,
@@ -487,7 +487,17 @@ async function main() {
         fromBeatId: beat13.id,
         toBeatId: beat14.id,
         transitionType: TransitionType.SUCCESS,
-        conditionDescription: "The final confrontation concludes the campaign.",
+        conditionDescription:
+          "Players choose to restore the bloodline and reclaim the crown.",
+        isHidden: false,
+      },
+      {
+        campaignId: activeCampaign.id,
+        fromBeatId: beat13.id,
+        toBeatId: beat15.id,
+        transitionType: TransitionType.REJECT,
+        conditionDescription:
+          "Players choose to destroy the crown outright, ending the bloodline forever.",
         isHidden: false,
       },
     ],

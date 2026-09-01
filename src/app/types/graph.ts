@@ -1,4 +1,9 @@
-export type BeatState = "completed" | "current" | "default";
+export type BeatState =
+  | "completed"
+  | "active"
+  | "available"
+  | "foreclosed"
+  | "default";
 
 export type TransitionForGraph = {
   id: string;
@@ -7,6 +12,8 @@ export type TransitionForGraph = {
   transitionType: string;
   conditionDescription: string | null;
   isHidden: boolean;
+  isBranch: boolean;
+  takenAt: string | null;
 };
 
 export type BeatForGraph = {
