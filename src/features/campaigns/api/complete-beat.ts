@@ -4,7 +4,7 @@ type CompleteResult =
   | {
       success: true;
       id: string;
-      completedAt: string;
+      completedAt: string | null;
       activeBeatId: string | null;
     }
   | {
@@ -27,7 +27,7 @@ export async function completeBeat(
       completedAt: true,
       campaignId: true,
       outgoingTransitions: {
-        select: { id: true, toBeatId: true },
+        select: { id: true, toBeatId: true, isBranch: true },
       },
     },
   });
@@ -38,6 +38,7 @@ export async function completeBeat(
   }
 
   let nextActiveBeatId: string | null = null;
+  let completesSource = true;
 
   if (beat.outgoingTransitions.length > 0) {
     if (!transitionId) {
@@ -53,6 +54,7 @@ export async function completeBeat(
     }
 
     nextActiveBeatId = chosenTransition.toBeatId;
+    completesSource = !chosenTransition.isBranch;
   }
 
   const activeCampaign = await prisma.activeCampaign.findUnique({
@@ -63,10 +65,14 @@ export async function completeBeat(
   const now = new Date();
 
   await prisma.$transaction([
-    prisma.storyBeat.update({
-      where: { id: beatId },
-      data: { completedAt: now },
-    }),
+    ...(completesSource
+      ? [
+          prisma.storyBeat.update({
+            where: { id: beatId },
+            data: { completedAt: now },
+          }),
+        ]
+      : []),
     ...(transitionId
       ? [
           prisma.beatTransition.update({
@@ -88,7 +94,7 @@ export async function completeBeat(
   return {
     success: true,
     id: beatId,
-    completedAt: now.toISOString(),
+    completedAt: completesSource ? now.toISOString() : null,
     activeBeatId: nextActiveBeatId,
   };
 }
