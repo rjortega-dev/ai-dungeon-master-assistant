@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { BeatForGraph } from "@/app/types/graph";
 
 type StoryBeatActionPanelProps = {
@@ -6,6 +7,10 @@ type StoryBeatActionPanelProps = {
   onComplete: (beatId: string, transitionId?: string) => void;
   onUncomplete: (beatId: string) => void;
   onSetActive: (beatId: string) => void;
+  onCreateBeat: (
+    sourceBeatId: string,
+    input: { title: string; description?: string; isMainContinuation: boolean },
+  ) => void;
   onClose: () => void;
   isUpdating: boolean;
   actionError: string | null;
@@ -22,7 +27,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   NOT_COMPLETED: "This beat isn't completed yet.",
   CAMPAIGN_MISMATCH: "That beat doesn't belong to this campaign.",
   NOT_FOUND: "Couldn't find that beat.",
+  TITLE_REQUIRED: "Give the new beat a title.",
 };
+
+type CreateFormMode = null | "main" | "side";
 
 export function StoryBeatActionPanel({
   beat,
@@ -30,11 +38,31 @@ export function StoryBeatActionPanel({
   onComplete,
   onUncomplete,
   onSetActive,
+  onCreateBeat,
   onClose,
   isUpdating,
   actionError,
 }: StoryBeatActionPanelProps) {
   const beatById = new Map(allBeats.map((b) => [b.id, b]));
+  const [createFormMode, setCreateFormMode] = useState<CreateFormMode>(null);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+
+  function resetCreateForm() {
+    setCreateFormMode(null);
+    setNewTitle("");
+    setNewDescription("");
+  }
+
+  function handleCreateSubmit() {
+    if (!createFormMode) return;
+    onCreateBeat(beat.id, {
+      title: newTitle,
+      description: newDescription || undefined,
+      isMainContinuation: createFormMode === "main",
+    });
+    resetCreateForm();
+  }
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-accent/30 bg-card px-4 py-3">
@@ -69,36 +97,100 @@ export function StoryBeatActionPanel({
         </button>
       )}
 
-      {beat.state === "active" && beat.outgoingTransitions.length === 0 && (
-        <button
-          onClick={() => onComplete(beat.id)}
-          disabled={isUpdating}
-          className="self-start rounded-md border border-accent/40 px-3 py-1.5 text-sm text-accent-text hover:bg-accent/10 transition-colors disabled:opacity-50"
-        >
-          {isUpdating ? "Updating..." : "Mark Complete"}
-        </button>
-      )}
+      {beat.state === "active" && (
+        <>
+          {beat.outgoingTransitions.length === 0 && (
+            <button
+              onClick={() => onComplete(beat.id)}
+              disabled={isUpdating}
+              className="self-start rounded-md border border-accent/40 px-3 py-1.5 text-sm text-accent-text hover:bg-accent/10 transition-colors disabled:opacity-50"
+            >
+              {isUpdating ? "Updating..." : "Mark Complete"}
+            </button>
+          )}
 
-      {beat.state === "active" && beat.outgoingTransitions.length > 0 && (
-        <div className="flex flex-col gap-1.5">
-          <p className="text-xs text-muted uppercase tracking-wider font-semibold">
-            Complete via
-          </p>
-          {beat.outgoingTransitions.map((t) => {
-            const toBeat = beatById.get(t.toBeatId);
-            return (
+          {beat.outgoingTransitions.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <p className="text-xs text-muted uppercase tracking-wider font-semibold">
+                Complete via
+              </p>
+              {beat.outgoingTransitions.map((t) => {
+                const toBeat = beatById.get(t.toBeatId);
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => onComplete(beat.id, t.id)}
+                    disabled={isUpdating}
+                    className="text-left rounded-md border border-accent/40 px-3 py-1.5 text-sm text-accent-text hover:bg-accent/10 transition-colors disabled:opacity-50"
+                  >
+                    {t.isHidden ? "??? " : `${t.transitionType} `}
+                    {toBeat ? `→ ${toBeat.title}` : ""}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {createFormMode === null && (
+            <div className="flex flex-wrap gap-2 pt-1 border-t border-accent/10">
               <button
-                key={t.id}
-                onClick={() => onComplete(beat.id, t.id)}
+                onClick={() => setCreateFormMode("main")}
                 disabled={isUpdating}
-                className="text-left rounded-md border border-accent/40 px-3 py-1.5 text-sm text-accent-text hover:bg-accent/10 transition-colors disabled:opacity-50"
+                className="rounded-md border border-accent/30 px-3 py-1.5 text-xs text-muted hover:text-foreground hover:border-accent/50 transition-colors disabled:opacity-50 mt-2"
               >
-                {t.isHidden ? "??? " : `${t.transitionType} `}
-                {toBeat ? `→ ${toBeat.title}` : ""}
+                + Add Main Story Event
               </button>
-            );
-          })}
-        </div>
+              <button
+                onClick={() => setCreateFormMode("side")}
+                disabled={isUpdating}
+                className="rounded-md border border-accent/30 px-3 py-1.5 text-xs text-muted hover:text-foreground hover:border-accent/50 transition-colors disabled:opacity-50 mt-2"
+              >
+                + Add Side Quest
+              </button>
+            </div>
+          )}
+
+          {createFormMode !== null && (
+            <div className="flex flex-col gap-2 pt-1 border-t border-accent/10 mt-1">
+              <p className="text-xs text-muted uppercase tracking-wider font-semibold pt-2">
+                {createFormMode === "main"
+                  ? "New main story event"
+                  : "New side quest"}
+              </p>
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Title"
+                autoFocus
+                className="rounded-md border border-accent/30 bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent"
+              />
+              <textarea
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                placeholder="Description (optional)"
+                rows={2}
+                className="rounded-md border border-accent/30 bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent resize-none"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCreateSubmit}
+                  disabled={isUpdating || !newTitle.trim()}
+                  className="rounded-md border border-accent/40 px-3 py-1.5 text-sm text-accent-text hover:bg-accent/10 transition-colors disabled:opacity-50"
+                >
+                  {isUpdating ? "Creating..." : "Create"}
+                </button>
+                <button
+                  onClick={resetCreateForm}
+                  disabled={isUpdating}
+                  className="rounded-md px-3 py-1.5 text-sm text-muted hover:text-foreground transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {(beat.state === "available" || beat.state === "foreclosed") && (

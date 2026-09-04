@@ -249,9 +249,10 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
     setBeats(data.beats);
   }, [campaignId]);
 
-  // Shared plumbing for all three write actions: optimistic local update,
-  // fire the request, refetch on success to reconcile, roll back on failure
-  // and surface the server's error reason.
+  // Shared plumbing for the three actions that CAN be optimistic (complete,
+  // uncomplete, set-active): apply a local snapshot immediately, fire the
+  // request, refetch on success to reconcile, roll back and surface the
+  // server's error reason on failure.
   const runAction = useCallback(
     async (
       beatId: string,
@@ -400,6 +401,59 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
     [beats, campaignId, runAction],
   );
 
+  // Creating a new beat can't be meaningfully optimistic the way the other
+  // three actions are — we don't have a real id for the new beat or its
+  // transition until the server responds. So this one skips the optimistic
+  // snapshot: it shows the updating state, waits for the real response,
+  // then refetches. Tradeoff is a brief pause instead of an instant (but
+  // fabricated) preview.
+  const handleCreateBeat = useCallback(
+    (
+      sourceBeatId: string,
+      input: {
+        title: string;
+        description?: string;
+        isMainContinuation: boolean;
+      },
+    ) => {
+      if (!beats) return;
+
+      const previousBeats = beats;
+      setActionError(null);
+
+      flushSync(() => {
+        setIsUpdating(true);
+        setErrorBeatIds((prev) => {
+          const next = new Set(prev);
+          next.delete(sourceBeatId);
+          return next;
+        });
+      });
+
+      fetch(`/api/beats/${sourceBeatId}/create-next`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const body = await response.json().catch(() => null);
+            throw new Error(body?.error ?? "UNKNOWN_ERROR");
+          }
+          await refetchBeats();
+        })
+        .catch((err) => {
+          setBeats(previousBeats);
+          setErrorBeatIds((prev) => new Set(prev).add(sourceBeatId));
+          setActionError(err instanceof Error ? err.message : "UNKNOWN_ERROR");
+        })
+        .finally(() => {
+          setIsUpdating(false);
+        });
+    },
+    [beats, refetchBeats],
+  );
+
   const selectedBeat = useMemo(() => {
     if (!beats || !selectedBeatId) {
       return null;
@@ -437,6 +491,7 @@ function StoryBeatGraphInner({ campaignId }: StoryBeatGraphProps) {
             onComplete={handleComplete}
             onUncomplete={handleUncomplete}
             onSetActive={handleSetActive}
+            onCreateBeat={handleCreateBeat}
             onClose={() => setSelectedBeatId(null)}
             isUpdating={isUpdating}
             actionError={actionError}
